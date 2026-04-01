@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AEGIS MISSION CONTROL</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "inverse-on-surface": "#2e3037",
+                        "on-background": "#e1e2eb",
+                        "tertiary-fixed-dim": "#00dddd",
+                        "error": "#ffb4ab",
+                        "inverse-primary": "#006a6a",
+                        "on-secondary-fixed-variant": "#832700",
+                        "inverse-surface": "#e1e2eb",
+                        "surface": "#10131a",
+                        "on-surface": "#e1e2eb",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#003737",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#1d2026",
+                        "surface-container-high": "#272a31",
+                        "on-error": "#690005",
+                        "on-primary": "#003737",
+                        "on-primary-fixed": "#002020",
+                        "tertiary": "#ffffff",
+                        "on-tertiary-container": "#007070",
+                        "on-secondary-container": "#511500",
+                        "tertiary-fixed": "#00fbfb",
+                        "on-tertiary-fixed": "#002020",
+                        "secondary-fixed": "#ffdbcf",
+                        "secondary": "#ffb59c",
+                        "surface-container-low": "#191c22",
+                        "tertiary-container": "#00fbfb",
+                        "secondary-container": "#fa5c1c",
+                        "outline-variant": "#3a4a49",
+                        "primary-fixed-dim": "#00dddd",
+                        "outline": "#839493",
+                        "surface-bright": "#363940",
+                        "on-secondary": "#5c1900",
+                        "primary-fixed": "#00fbfb",
+                        "surface-tint": "#00dddd",
+                        "primary": "#ffffff",
+                        "secondary-fixed-dim": "#ffb59c",
+                        "on-primary-fixed-variant": "#004f4f",
+                        "surface-container-highest": "#32353c",
+                        "background": "#10131a",
+                        "on-primary-container": "#007070",
+                        "on-secondary-fixed": "#390c00",
+                        "surface-variant": "#32353c",
+                        "surface-dim": "#10131a",
+                        "on-surface-variant": "#b9cac9",
+                        "on-tertiary-fixed-variant": "#004f4f",
+                        "primary-container": "#00fbfb",
+                        "surface-container-lowest": "#0b0e14"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(25, 28, 34, 0.6);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+        }
+        .ghost-border {
+            border: 1px solid rgba(58, 74, 73, 0.2);
+        }
+        .molten-gradient {
+            background: linear-gradient(135deg, #FFB59C 0%, #FA5C1C 100%);
+        }
+        .pulse-ring {
+            position: relative;
+        }
+        .pulse-ring::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #FA5C1C;
+            opacity: 0.5;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0b0e14; }
+        ::-webkit-scrollbar-thumb { background: #1d2026; border-radius: 10px; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-lowest font-body text-on-surface antialiased overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-slate-950/60 backdrop-blur-xl border-b border-cyan-500/15 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+<div class="flex items-center gap-4">
+<button class="text-cyan-400 active:scale-95 duration-150 p-2 hover:bg-cyan-500/10 transition-colors rounded-lg">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-xl font-bold tracking-tighter text-cyan-400 drop-shadow-[0_0_8px_rgba(0,251,251,0.5)] font-headline uppercase">MISSION_CONTROL</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="text-cyan-400 active:scale-95 duration-150 p-2 hover:bg-cyan-500/10 transition-colors rounded-lg relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full border border-surface-container-lowest"></span>
+</button>
+</div>
+</header>
+<!-- Side Navigation (Mobile Overlay Concept - Rendered for Desktop context but optimized for visual layout) -->
+<aside class="hidden lg:flex fixed inset-y-0 left-0 z-[60] w-72 flex-col bg-slate-950/80 backdrop-blur-2xl rounded-r-lg border-r border-cyan-500/10 shadow-2xl shadow-cyan-900/20 divide-y divide-cyan-500/5">
+<div class="p-6 flex flex-col items-start gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high border border-cyan-500/20 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of a military commander in a high-tech tactical environment with blue ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2ud1OFgAmJtGzpglYLqhixVE5Zq0VqEjdlcosDMRlVjLOL0avAfThca-aysmtmSFJUeHRy4mV0hSsg9w-W11vErzPK_7xtEp3804yOzp3zlaPExvE-tSvSYYF3iQBqN_4sNBMj2XPVCmryIqMASmNH_923OGtOMDzNiGZRKje4Aigx1AGDWECPGSAi9JJqAvchM1CFSnTYk3q8KY8eDEwYPR7PzL6oU1o_DIOMeeosGcWs8uU3-n6v41JumGwTOY37SnY0MfBSIw"/>
+</div>
+<div>
+<h3 class="font-headline font-bold text-cyan-400 text-lg uppercase tracking-tight">CMD_ELARA</h3>
+<p class="text-[10px] tracking-widest text-slate-400 uppercase">Sector 7 Authority • Active Duty</p>
+</div>
+</div>
+<nav class="flex-1 py-4 px-3 space-y-1">
+<a class="flex items-center gap-4 px-4 py-3 bg-gradient-to-r from-orange-500/20 to-transparent text-orange-400 border-l-2 border-orange-500 transition-all duration-300 font-headline text-sm tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-cyan-200 hover:bg-slate-800/50 transition-all duration-300 font-headline text-sm tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined">settings_input_antenna</span>
+<span>Transmissions</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-cyan-200 hover:bg-slate-800/50 transition-all duration-300 font-headline text-sm tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined">model_training</span>
+<span>Simulations</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-cyan-200 hover:bg-slate-800/50 transition-all duration-300 font-headline text-sm tracking-widest uppercase" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Analytics</span>
+</a>
+</nav>
+</aside>
+<main class="pt-20 pb-24 px-4 md:px-8 lg:ml-72 max-w-7xl mx-auto space-y-6">
+<!-- KPI Metrics Grid -->
+<section class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<div class="glass-panel ghost-border rounded-lg p-4 flex flex-col justify-between">
+<span class="text-[10px] uppercase tracking-widest text-outline font-label">Active Agents</span>
+<div class="flex items-end gap-2 mt-2">
+<span class="text-3xl font-headline font-bold text-primary">124</span>
+<span class="text-cyan-400 material-symbols-outlined text-sm mb-1">radar</span>
+</div>
+</div>
+<div class="glass-panel ghost-border rounded-lg p-4 flex flex-col justify-between border-t-secondary/20">
+<span class="text-[10px] uppercase tracking-widest text-outline font-label">Critical Alerts</span>
+<div class="flex items-end gap-2 mt-2">
+<span class="text-3xl font-headline font-bold text-secondary">08</span>
+<span class="text-secondary pulse-ring w-2 h-2 rounded-full mb-3 ml-1 block"></span>
+</div>
+</div>
+<div class="col-span-2 md:col-span-1 glass-panel ghost-border rounded-lg p-4 flex flex-col justify-between">
+<span class="text-[10px] uppercase tracking-widest text-outline font-label">Preparedness Score</span>
+<div class="flex items-end gap-2 mt-2">
+<span class="text-3xl font-headline font-bold text-tertiary-fixed">94%</span>
+<div class="h-1 w-full bg-surface-container-high rounded-full mb-3 ml-2 overflow-hidden">
+<div class="h-full w-[94%] bg-tertiary-fixed shadow-[0_0_8px_#00fbfb]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Recommendation Banner -->
+<section class="relative overflow-hidden rounded-xl bg-surface-container border border-cyan-500/10 p-5 group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="relative z-10 flex flex-col gap-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">psychology</span>
+<span class="font-headline font-bold text-xs tracking-widest uppercase text-on-surface">Tactical Intel Suggestion</span>
+</div>
+<h2 class="text-lg font-headline font-bold text-primary leading-tight">Structural Reinforcement Recommended for Zone 5</h2>
+<p class="text-sm text-on-surface-variant leading-relaxed max-w-md">
+                    Seismic sensors in North-Western region indicate atypical pressure variance. Initiate Grade-A reinforcement protocols for essential infrastructure in High-Density Zone 5.
+                </p>
+<button class="mt-2 w-max px-6 py-2 molten-gradient rounded-lg text-on-secondary-fixed font-headline font-bold text-xs uppercase tracking-widest shadow-[0_4px_15px_rgba(250,92,28,0.3)] active:scale-95 transition-transform">
+                    Deploy Support
+                </button>
+</div>
+</section>
+<!-- Interactive Map Section -->
+<section class="space-y-4">
+<div class="flex justify-between items-center px-1">
+<h3 class="font-headline font-bold tracking-widest uppercase text-xs text-outline">Regional Threat Visualization</h3>
+<div class="flex gap-2">
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-[9px] uppercase tracking-tighter text-outline-variant font-label">Extreme Risk</span>
+</div>
+</div>
+</div>
+<div class="relative h-[380px] rounded-xl overflow-hidden ghost-border shadow-2xl">
+<!-- Map Background Placeholder with Descriptive Prompt -->
+<div class="absolute inset-0 bg-surface-container-low">
+<img class="w-full h-full object-cover opacity-60" data-alt="Stylized dark satellite topography map of India with glowing cyan grid lines and vibrant orange heat maps indicating risk zones" data-location="India" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7sh39hBUTsLdTkOJx0qx7DlDBWCbw0NHbjsRacUCrvyVTa_HF-r-gSyB1WMNP5LoBUKscCay7gNDlSTov9QzG6kAVNdpxdKvagCHTYsv5H_z7p5om5dk_JsSPKFivISn9ZHKd0n3ENl6HzvUS-HmvilaVSA21_Vrso0NAkE6DHvGR0xcsVxsHyvkmouZJjMZGqS3sild0jmUns9jlgXF0BSesC6IQSxwTst64XCNnCXp2Gr83Icstg4U66_Dl3o43KKfinyWwjU8"/>
+</div>
+<!-- Map UI Overlays -->
+<div class="absolute inset-0 pointer-events-none flex flex-col justify-between p-4">
+<div class="flex justify-between items-start">
+<div class="glass-panel p-2 rounded text-[10px] font-mono text-cyan-400">
+                            COORD: 20.5937° N, 78.9629° E
+                        </div>
+<div class="flex flex-col gap-2">
+<button class="glass-panel p-2 rounded pointer-events-auto active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+<button class="glass-panel p-2 rounded pointer-events-auto active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+</div>
+</div>
+<!-- Pulse Indicators on Map -->
+<div class="absolute top-[40%] left-[30%] pointer-events-auto">
+<div class="pulse-ring w-4 h-4 bg-secondary rounded-full shadow-[0_0_10px_#FA5C1C]"></div>
+<div class="absolute left-6 top-1/2 -translate-y-1/2 glass-panel px-3 py-1 rounded text-[10px] font-headline font-bold text-primary whitespace-nowrap border-l-2 border-secondary">
+                            M 6.2 PREDICTION
+                        </div>
+</div>
+<div class="absolute bottom-20 right-[20%] pointer-events-auto">
+<div class="w-3 h-3 bg-cyan-400 rounded-full shadow-[0_0_10px_#00FBFB]"></div>
+<div class="absolute right-5 top-1/2 -translate-y-1/2 glass-panel px-3 py-1 rounded text-[10px] font-headline font-bold text-primary whitespace-nowrap border-r-2 border-cyan-400">
+                            RELIEF UNIT 04
+                        </div>
+</div>
+<div class="mt-auto glass-panel p-3 rounded-lg border border-cyan-500/10 pointer-events-auto">
+<div class="flex items-center justify-between mb-2">
+<span class="text-[10px] font-headline font-bold uppercase text-cyan-400">Active Monitoring</span>
+<span class="text-[9px] font-mono text-outline">LIVE FEED: 104fps</span>
+</div>
+<div class="flex gap-2">
+<div class="h-1 flex-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-cyan-500 w-[70%]"></div>
+</div>
+<div class="h-1 flex-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[40%]"></div>
+</div>
+<div class="h-1 flex-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-cyan-500 w-[90%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Asymmetric Task Feed / News -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="glass-panel ghost-border rounded-xl p-5 space-y-4">
+<div class="flex items-center justify-between">
+<h4 class="font-headline font-bold text-xs tracking-widest uppercase text-tertiary-fixed">Communication Logs</h4>
+<span class="material-symbols-outlined text-sm text-outline">more_horiz</span>
+</div>
+<div class="space-y-4">
+<div class="flex gap-3 items-start border-l border-cyan-500/20 pl-4 relative">
+<div class="absolute -left-[4.5px] top-1 w-2 h-2 rounded-full bg-cyan-500"></div>
+<div class="flex-1">
+<p class="text-xs font-mono text-cyan-200">14:22:10</p>
+<p class="text-sm text-on-surface leading-tight mt-1">Satellite uplink confirmed for North Sector. Minimal latency detected.</p>
+</div>
+</div>
+<div class="flex gap-3 items-start border-l border-secondary/20 pl-4 relative">
+<div class="absolute -left-[4.5px] top-1 w-2 h-2 rounded-full bg-secondary"></div>
+<div class="flex-1">
+<p class="text-xs font-mono text-secondary">14:18:45</p>
+<p class="text-sm text-on-surface leading-tight mt-1">Warning: Unidentified seismic event detected in Region B-12. Investigating.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-1 overflow-hidden flex flex-col">
+<div class="h-32 relative overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="High resolution earth satellite view from space with glowing digital data visualization overlays in neon blue" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6wzyKJ79efMZTKt9QvAUZ8qDUa_9x2e5nM4uXQiuaCw8-SejTQq3XbOmpAgN8ILlkrjYy6gBspwZ7v9BHyKF6SP0AN7XNdPe_AJ7B7vfEqJalu5FU7E-Jw6WnfEwJoad7Eyf5Lp2XEsU1zkq6JALyE_kdUydJP7wEOXQ20qSJ2-VELlYEjy29SQnVQ6Gdrhnk3w9jLYP5XPiKI3NHOGAWPtB5SFU0PzXWqhDlPG4aivb8UBdAZbf_m4ddkf_V-XPxNL2VoP2o3CY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent"></div>
+<span class="absolute top-3 left-3 px-2 py-1 bg-surface-container-lowest/80 backdrop-blur-md rounded text-[9px] font-headline font-bold uppercase tracking-widest text-secondary">Orbital Recon</span>
+</div>
+<div class="p-4 space-y-2">
+<h4 class="text-sm font-headline font-bold text-primary">Simulation Alpha-7 Completed</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Flood scenario modeling in West Bengal plains indicates 12% improvement in evacuation timing using current agent deployment strategies.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-slate-950/40 backdrop-blur-md border-t border-white/10 flex justify-around items-center h-16 px-4 shadow-[0_-8px_32px_rgba(0,0,0,0.4)]">
+<button class="flex flex-col items-center justify-center bg-cyan-500/20 text-cyan-300 rounded-lg p-2 shadow-[0_0_15px_rgba(0,251,251,0.2)] active:scale-90 transition-transform">
+<span class="material-symbols-outlined">tactic</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.1em] font-label mt-0.5">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 p-2 hover:text-cyan-100 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">rss_feed</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.1em] font-label mt-0.5">Comm</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 p-2 hover:text-cyan-100 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.1em] font-label mt-0.5">Sim</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 p-2 hover:text-cyan-100 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.1em] font-label mt-0.5">Data</span>
+</button>
+</nav>
+</body></html>
