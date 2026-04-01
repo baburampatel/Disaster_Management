@@ -3,12 +3,40 @@
     {
       "src": "api/index.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "static/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "templates/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "model.pkl",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "db.py",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "init_db.py",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "training_dataset.csv",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/static/(.*)",
       "dest": "/static/$1"
+    },
+    {
+      "src": "/templates/(.*)",
+      "dest": "/templates/$1"
     },
     {
       "src": "/(.*)",
