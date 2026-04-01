@@ -1,23 +1,33 @@
 from flask import Flask, render_template, request, redirect, session, flash
-from flask_mysqldb import MySQL
 import bcrypt
 import datetime
 import pickle
+import sqlite3
+import os
 
-app = Flask(__name__)
+from init_db import init_database
+
+# ================= PATHS =================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join('/tmp', 'disaster.db')
+
+app = Flask(__name__,
+            template_folder=os.path.join(BASE_DIR, 'templates'),
+            static_folder=os.path.join(BASE_DIR, 'static'))
 app.secret_key = "secret123"
 
-# ================= MYSQL CONFIG =================
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'mysql'
-app.config['MYSQL_DB'] = 'disaster_education'
+# ================= DATABASE HELPERS =================
+def get_db():
+    db = sqlite3.connect(DB_PATH)
+    return db
 
-mysql = MySQL(app)
+# Initialize DB on startup
+init_database(DB_PATH)
 
 # ================= LOAD AI MODEL =================
 try:
-    model = pickle.load(open("model.pkl", "rb"))
+    model_path = os.path.join(BASE_DIR, "model.pkl")
+    model = pickle.load(open(model_path, "rb"))
 except:
     model = None
 
@@ -33,9 +43,11 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT * FROM users WHERE email=%s",(email,))
+        db = get_db()
+        cur = db.cursor()
+        cur.execute("SELECT * FROM users WHERE email=?",(email,))
         user = cur.fetchone()
+        db.close()
 
         if not user:
             flash("Email does not exist")
@@ -48,11 +60,14 @@ def login():
         session['user_id'] = user[0]
         session['role'] = user[4]
 
+        db = get_db()
+        cur = db.cursor()
         cur.execute(
-            "UPDATE users SET last_login=%s WHERE id=%s",
-            (datetime.datetime.now(), user[0])
+            "UPDATE users SET last_login=? WHERE id=?",
+            (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), user[0])
         )
-        mysql.connection.commit()
+        db.commit()
+        db.close()
 
         if user[4] == "admin":
             return redirect('/admin')
@@ -76,19 +91,22 @@ def register():
 
         hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
-        cur = mysql.connection.cursor()
+        db = get_db()
+        cur = db.cursor()
 
-        cur.execute("SELECT id FROM users WHERE email=%s",(email,))
+        cur.execute("SELECT id FROM users WHERE email=?",(email,))
         if cur.fetchone():
             flash("Email already registered")
+            db.close()
             return redirect('/register')
 
         cur.execute(
-            "INSERT INTO users (name,email,password,role) VALUES (%s,%s,%s,'user')",
+            "INSERT INTO users (name,email,password,role) VALUES (?,?,?,'user')",
             (name,email,hashed_pw)
         )
 
-        mysql.connection.commit()
+        db.commit()
+        db.close()
 
         return redirect('/')
 
@@ -104,13 +122,14 @@ def user_dashboard():
     if 'user_id' not in session:
         return redirect('/')
 
-    cur = mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
     cur.execute("""
     SELECT disaster_type,
-    ROUND(AVG((score/total)*100),2)
+    ROUND(AVG((score*1.0/total)*100),2)
     FROM disaster_scores
-    WHERE user_id=%s
+    WHERE user_id=?
     GROUP BY disaster_type
     """,(session['user_id'],))
 
@@ -141,10 +160,11 @@ def user_dashboard():
     cur.execute("""
     SELECT id,message,admin_reply
     FROM feedback
-    WHERE user_id=%s AND admin_reply IS NOT NULL
+    WHERE user_id=? AND admin_reply IS NOT NULL
     """,(session['user_id'],))
 
     notifications=cur.fetchall()
+    db.close()
 
     return render_template(
         "user_dashboard.html",
@@ -161,9 +181,11 @@ def user_dashboard():
 @app.route('/delete-notification/<int:id>')
 def delete_notification(id):
 
-    cur=mysql.connection.cursor()
-    cur.execute("UPDATE feedback SET admin_reply=NULL WHERE id=%s",(id,))
-    mysql.connection.commit()
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("UPDATE feedback SET admin_reply=NULL WHERE id=?",(id,))
+    db.commit()
+    db.close()
 
     return redirect('/user')
 
@@ -181,14 +203,16 @@ def feedback_page():
 
         msg=request.form['message']
 
-        cur=mysql.connection.cursor()
+        db = get_db()
+        cur = db.cursor()
 
         cur.execute(
-        "INSERT INTO feedback (user_id,message) VALUES (%s,%s)",
+        "INSERT INTO feedback (user_id,message) VALUES (?,?)",
         (session['user_id'],msg)
         )
 
-        mysql.connection.commit()
+        db.commit()
+        db.close()
 
         flash("Feedback submitted")
 
@@ -204,7 +228,8 @@ def admin_dashboard():
     if 'user_id' not in session or session['role']!='admin':
         return redirect('/')
 
-    cur=mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
     # USERS
     cur.execute("""
@@ -236,7 +261,7 @@ def admin_dashboard():
     # GRAPH
     cur.execute("""
     SELECT d.disaster_type,
-    COALESCE(ROUND(AVG((s.score/s.total)*100),2),0)
+    COALESCE(ROUND(AVG((s.score*1.0/s.total)*100),2),0)
     FROM disaster_details d
     LEFT JOIN disaster_scores s
     ON d.disaster_type=s.disaster_type
@@ -247,6 +272,8 @@ def admin_dashboard():
 
     analytics_labels=[a[0] for a in analytics]
     analytics_values=[float(a[1]) for a in analytics]
+
+    db.close()
 
     return render_template(
         "admin_dashboard.html",
@@ -266,14 +293,16 @@ def reply(id):
 
     reply_text=request.form['reply']
 
-    cur=mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
     cur.execute(
-    "UPDATE feedback SET admin_reply=%s WHERE id=%s",
+    "UPDATE feedback SET admin_reply=? WHERE id=?",
     (reply_text,id)
     )
 
-    mysql.connection.commit()
+    db.commit()
+    db.close()
 
     return redirect('/admin')
 
@@ -284,13 +313,15 @@ def reply(id):
 @app.route('/delete-user/<int:id>')
 def delete_user(id):
 
-    cur=mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
-    cur.execute("DELETE FROM disaster_scores WHERE user_id=%s",(id,))
-    cur.execute("DELETE FROM feedback WHERE user_id=%s",(id,))
-    cur.execute("DELETE FROM users WHERE id=%s",(id,))
+    cur.execute("DELETE FROM disaster_scores WHERE user_id=?",(id,))
+    cur.execute("DELETE FROM feedback WHERE user_id=?",(id,))
+    cur.execute("DELETE FROM users WHERE id=?",(id,))
 
-    mysql.connection.commit()
+    db.commit()
+    db.close()
 
     return redirect('/admin')
 
@@ -305,14 +336,16 @@ def reset_password(id):
 
     hashed=bcrypt.hashpw(new_password.encode(),bcrypt.gensalt()).decode()
 
-    cur=mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
     cur.execute(
-    "UPDATE users SET password=%s WHERE id=%s",
+    "UPDATE users SET password=? WHERE id=?",
     (hashed,id)
     )
 
-    mysql.connection.commit()
+    db.commit()
+    db.close()
 
     return redirect('/admin')
 
@@ -323,11 +356,13 @@ def reset_password(id):
 @app.route('/general')
 def general_disasters():
 
-    cur=mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
     cur.execute("SELECT DISTINCT disaster_type FROM disaster_details")
 
     disasters=cur.fetchall()
+    db.close()
 
     return render_template("general_disasters.html",disasters=disasters)
 
@@ -353,15 +388,17 @@ def continents():
 @app.route('/continent/<continent>')
 def continent_disasters(continent):
 
-    cur=mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
     cur.execute("""
     SELECT DISTINCT disaster_type
     FROM disaster_details
-    WHERE continent=%s
+    WHERE continent=?
     """,(continent,))
 
     disasters=cur.fetchall()
+    db.close()
 
     return render_template(
     "continent_disasters.html",
@@ -394,15 +431,17 @@ def india_states():
 @app.route('/india/<state>')
 def state_disasters(state):
 
-    cur=mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
     cur.execute("""
     SELECT DISTINCT disaster_type
     FROM disaster_details
-    WHERE state=%s
+    WHERE state=?
     """,(state,))
 
     disasters=cur.fetchall()
+    db.close()
 
     return render_template(
     "state_disasters.html",
@@ -417,16 +456,18 @@ def state_disasters(state):
 @app.route('/simulation/<disaster>')
 def disaster_details_page(disaster):
 
-    cur=mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
     cur.execute("""
     SELECT description,causes,impacts,
     case_study,lessons,dos,donts
     FROM disaster_details
-    WHERE disaster_type=%s
+    WHERE disaster_type=?
     """,(disaster,))
 
     details=cur.fetchone()
+    db.close()
 
     return render_template(
     "disaster_details.html",
@@ -453,12 +494,13 @@ def exercise_list(disaster):
 @app.route('/simulation/<disaster>/exercise/<int:exercise>',methods=['GET','POST'])
 def simulation_exercise(disaster,exercise):
 
-    cur=mysql.connection.cursor()
+    db = get_db()
+    cur = db.cursor()
 
     cur.execute("""
     SELECT *
     FROM disaster_questions
-    WHERE disaster_type=%s AND exercise_number=%s
+    WHERE disaster_type=? AND exercise_number=?
     """,(disaster,exercise))
 
     questions=cur.fetchall()
@@ -490,10 +532,11 @@ def simulation_exercise(disaster,exercise):
         cur.execute("""
         INSERT INTO disaster_scores
         (user_id,disaster_type,exercise_number,score,total)
-        VALUES (%s,%s,%s,%s,%s)
+        VALUES (?,?,?,?,?)
         """,(session['user_id'],disaster,exercise,score,total))
 
-        mysql.connection.commit()
+        db.commit()
+        db.close()
 
         return render_template(
         "result.html",
@@ -502,6 +545,8 @@ def simulation_exercise(disaster,exercise):
         total=total,
         review=review
         )
+
+    db.close()
 
     return render_template(
     "exercise_questions.html",

@@ -1,0 +1,25 @@
+[build]
+  publish = "public"
+  command = "mkdir -p public/static && cp -r static/* public/static/ && pip install -r requirements.txt"
+  functions = "netlify/functions"
+
+[functions]
+  included_files = [
+    "templates/**",
+    "static/**",
+    "app.py",
+    "init_db.py",
+    "model.pkl",
+    "training_dataset.csv"
+  ]
+
+[[redirects]]
+  from = "/static/*"
+  to = "/static/:splat"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
