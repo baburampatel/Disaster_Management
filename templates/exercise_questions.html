@@ -1,83 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ disaster }} – Exercise {{ exercise }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-
-<!-- ===== TOP BAR ===== -->
-
-
-<!-- ===== PAGE CONTENT ===== -->
-<div class="page-container">
-<div class="card dashboard">
-
-<h2>{{ disaster }} – Exercise {{ exercise }}</h2><div class="top-bar">
-    <a href="/simulation/{{ disaster }}/exercises"
-       class="exit-btn"
-       onclick="return confirm('Are you sure you want to exit? Your answers will be lost.')">
-        ❌ Exit Exercise
+{% extends "base.html" %}
+{% block title %}{{ disaster }} Ex{{ exercise }} - DisasterGuard{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2>{{ disaster }} – Exercise {{ exercise }}</h2>
+    <a href="/simulation/{{ disaster }}/exercises" class="btn btn-danger btn-sm" onclick="return confirm('Abort exercise? Progress will be lost.')">
+        ❌ Abort Exercise
     </a>
 </div>
 
-<form method="post">
+<form method="post" class="card" style="padding: 2rem; background: transparent; border: none; box-shadow: none">
+    {% if questions|length == 0 %}
+        <div class="card text-center py-4">
+            <p class="text-danger mb-0">No tactical questions available for this variant.</p>
+        </div>
+    {% else %}
+        
+        {% for q in questions %}
+        <div class="question-block">
+            <div class="q-num">Question {{ loop.index }} of {{ questions|length }}</div>
+            <div class="q-text">{{ q[2] }}</div>
 
-{% if questions|length == 0 %}
-    <p style="text-align:center;color:red;">
-        No questions available for this exercise.
-    </p>
-{% else %}
+            <label class="option-label">
+                <input type="radio" name="{{ q[0] }}" value="A" required>
+                <span>A) {{ q[3] }}</span>
+            </label>
+            <label class="option-label">
+                <input type="radio" name="{{ q[0] }}" value="B">
+                <span>B) {{ q[4] }}</span>
+            </label>
+            <label class="option-label">
+                <input type="radio" name="{{ q[0] }}" value="C">
+                <span>C) {{ q[5] }}</span>
+            </label>
+            <label class="option-label">
+                <input type="radio" name="{{ q[0] }}" value="D">
+                <span>D) {{ q[6] }}</span>
+            </label>
+        </div>
+        {% endfor %}
 
-{% for q in questions %}
-<div class="question-card">
-
-    <div class="question-header">
-        Question {{ loop.index }}
-    </div>
-
-    <div class="question-text">
-        {{ q[2] }}
-    </div>
-
-    <!-- OPTION A -->
-    <label class="option-box">
-        <input type="radio" name="{{ q[0] }}" value="A" required>
-        <span>{{ q[3] }}</span>
-    </label>
-
-    <!-- OPTION B -->
-    <label class="option-box">
-        <input type="radio" name="{{ q[0] }}" value="B">
-        <span>{{ q[4] }}</span>
-    </label>
-
-    <!-- OPTION C -->
-    <label class="option-box">
-        <input type="radio" name="{{ q[0] }}" value="C">
-        <span>{{ q[5] }}</span>
-    </label>
-
-    <!-- OPTION D -->
-    <label class="option-box">
-        <input type="radio" name="{{ q[0] }}" value="D">
-        <span>{{ q[6] }}</span>
-    </label>
-
-</div>
-{% endfor %}
-
-<button class="submit-btn">Submit Exercise</button>
-
-{% endif %}
-
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 3rem;">Submit Report</button>
+        </div>
+    {% endif %}
 </form>
-
-</div>
-</div>
-
-</body>
-</html>
+{% endblock %}

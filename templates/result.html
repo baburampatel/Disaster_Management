@@ -1,55 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ disaster }} Result</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-
-<body>
-
-<div class="page-container">
-<div class="card">
-
-    <h2>{{ disaster }} Result</h2>
-    <h3 style="text-align:center;">Score: {{ score }} / {{ total }}</h3>
-
-    <hr>
-
-    <h3>Answer Review</h3>
-
-    {% for r in review %}
-    <div class="result-card {{ r.status }}">
-
-        <p><strong>Q{{ loop.index }}:</strong> {{ r.question }}</p>
-
-        <p>
-            Your Answer:
-            <span class="{% if r.status == 'correct' %}correct-text{% else %}wrong-text{% endif %}">
-                {{ r.user_answer }}
-            </span>
-        </p>
-
-        {% if r.status == "wrong" %}
-        <p>
-            Correct Answer:
-            <span class="correct-text">
-                {{ r.correct_answer }}
-            </span>
-        </p>
-        {% endif %}
-
+{% extends "base.html" %}
+{% block title %}Result - DisasterGuard{% endblock %}
+{% block content %}
+<div class="card mb-4 text-center">
+    <h2>Operation Result: {{ disaster }}</h2>
+    <div class="mt-3 mb-2">
+        <span style="font-size: 3rem; font-weight: 800; color: var(--primary-light)">{{ score }}</span> 
+        <span class="text-muted" style="font-size: 2rem;">/ {{ total }}</span>
     </div>
-    {% endfor %}
-
-    <br>
-
-    <a href="/user">
-        <button class="submit-btn">Back to Dashboard</button>
-    </a>
-
-</div>
+    <p class="text-muted">
+        {% if score == total %}Flawless Execution!
+        {% elif score >= (total/2) %}Satisfactory Performance.
+        {% else %}Requires Immediate Remediation.
+        {% endif %}
+    </p>
+    <a href="/user" class="btn btn-primary mt-3">Return to Command Center</a>
 </div>
 
-</body>
-</html>
+<h3 class="mb-3 mt-4">Post-Action Review</h3>
+<div class="card p-0" style="overflow: hidden">
+    <div class="table-wrapper m-0" style="border: none; border-radius:0;">
+        <table>
+        {% for r in review %}
+            <tr class="{% if r.status == 'correct' %}bg-success-light{% else %}bg-danger-light{% endif %}">
+                <td style="width: 50px; font-weight: bold;">Q{{ loop.index }}</td>
+                <td>
+                    <p class="mb-1" style="font-weight: 500;">{{ r.question }}</p>
+                    <div class="flex gap-2">
+                        <span class="badge {% if r.status == 'correct' %}badge-success{% else %}badge-danger{% endif %}">
+                            Agent: {{ r.user_answer }}
+                        </span>
+                        {% if r.status == "wrong" %}
+                            <span class="badge badge-success">Correct: {{ r.correct_answer }}</span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

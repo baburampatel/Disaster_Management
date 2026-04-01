@@ -1,32 +1,18 @@
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Feedback</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-
-<div class="page-container">
-<div class="card">
-
-<a href="/user" class="logout-btn">Back</a>
-
-<h2>Send Feedback</h2>
-
-{% with messages = get_flashed_messages(category_filter=["success"]) %}
-{% for msg in messages %}
-<div class="success-msg">{{ msg }}</div>
-{% endfor %}
-{% endwith %}
-
-<form method="post">
-    <textarea name="message" rows="5" placeholder="Write your feedback..." required></textarea>
-    <button>Submit Feedback</button>
-</form>
-
-</div>
+{% extends "base.html" %}
+{% block title %}Feedback - DisasterGuard{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2>Transmit Feedback to HQ</h2>
+    <a href="/user" class="btn btn-outline btn-sm">⬅ Dashboard</a>
 </div>
 
-</body>
-</html>
+<div class="card auth-card mt-4 p-4">
+    <form method="post">
+        <div class="form-group">
+            <label class="form-label">Message Log</label>
+            <textarea name="message" rows="6" placeholder="Report issues, request features, or provide operational feedback..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Transmit Feedback</button>
+    </form>
+</div>
+{% endblock %}

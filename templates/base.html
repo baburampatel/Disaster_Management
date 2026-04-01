@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DisasterGuard - Emergency Management{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% if session.get('role') == 'admin' %}/admin{% elif session.get('user_id') %}/user{% else %}/{% endif %}" class="nav-brand">
+                <span class="brand-icon">🛡️</span> Disaster<span class="brand-hl">Guard</span>
+            </a>
+            
+            <div class="nav-links">
+                {% if session.get('user_id') %}
+                    {% if session.get('role') != 'admin' %}
+                        <a href="/user" class="nav-link">Dashboard</a>
+                        <a href="/general" class="nav-link">Explore</a>
+                        <a href="/feedback-page" class="nav-link">Feedback</a>
+                    {% endif %}
+                    <a href="/logout" class="btn btn-outline btn-sm">Logout</a>
+                {% else %}
+                    <a href="/" class="nav-link">Login</a>
+                    <a href="/register" class="btn btn-primary btn-sm">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(category_filter=["error", "message"]) %}
+            {% if messages %}
+                {% for msg in messages %}
+                <div class="toast toast-error">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% with messages = get_flashed_messages(category_filter=["success"]) %}
+            {% if messages %}
+                {% for msg in messages %}
+                <div class="toast toast-success">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="footer">
+        <p>&copy; 2026 DisasterGuard. Preparedness saves lives.</p>
+    </footer>
+
+</body>
+</html>

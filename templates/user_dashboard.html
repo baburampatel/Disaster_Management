@@ -1,171 +1,113 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-
-<div class="page-container">
-<div class="card dashboard">
-
-<!-- ================= TOP BAR ================= -->
-<div class="top-bar">
-
-<div class="left-top">
-<a href="/feedback-page" class="top-btn">Feedback</a>
+{% extends "base.html" %}
+{% block title %}Dashboard - DisasterGuard{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2>Responder Dashboard</h2>
+    
+    <div class="notification-wrapper">
+        <span class="bell">🔔 Notifications</span>
+        {% if notifications %}
+        <span class="dot"></span>
+        {% endif %}
+        
+        <div class="notification-dropdown">
+            {% if notifications %}
+                {% for n in notifications %}
+                <div class="notification-item">
+                    <strong>Admin Reply</strong>
+                    <p>{{ n[2] }}</p>
+                    <a href="/delete-notification/{{ n[0] }}" class="btn btn-outline btn-sm mt-1 mb-1">Dismiss</a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty mt-2 mb-2">No active alerts</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
-<div class="right-top">
+<div class="dashboard-grid">
+    <!-- Simulations Stats -->
+    <div class="dash-card">
+        <h3>📊 Overall Readiness</h3>
+        <p class="text-muted mb-2">Based on your simulation scores</p>
+        {% if percentages %}
+            <div class="stat-value">{{ (percentages|sum / percentages|length)|round(1) }}%</div>
+        {% else %}
+            <div class="stat-value">N/A</div>
+            <p class="text-muted">Take a simulation to get a readiness score.</p>
+        {% endif %}
+    </div>
 
-<!-- Notification -->
-<div class="notification-wrapper">
-<span class="bell">🔔</span>
-
-{% if notifications %}
-<span class="dot"></span>
-{% endif %}
-
-<div class="notification-dropdown">
-{% if notifications %}
-{% for n in notifications %}
-<div class="notification-item">
-<strong>Admin Reply</strong>
-<p>{{ n[2] }}</p>
-</div>
-{% endfor %}
-{% else %}
-<p class="empty">No notifications</p>
-{% endif %}
-</div>
-</div>
-
-<a href="/logout" class="logout-btn">Logout</a>
-
-</div>
+    <!-- AI Recommendation -->
+    <div class="dash-card insight-card">
+        <h3>🤖 AI Target Area</h3>
+        {% if recommendation %}
+            <p>Our analytics engine detected a vulnerability in your preparedness:</p>
+            <div class="stat-value mt-2" style="color: #b45309; font-size: 1.8rem;">{{ recommendation }}</div>
+            <a href="/simulation/{{ recommendation }}" class="btn btn-outline btn-sm mt-3" style="border-color:#b45309;color:#b45309">Target this weakness</a>
+        {% else %}
+            <p>Complete more simulations to receive personalized AI recommendations.</p>
+        {% endif %}
+    </div>
 </div>
 
-<h2>User Dashboard</h2>
-
-<!-- ================= SIMULATION NAVIGATION ================= -->
-<div class="dashboard-card">
-
-<h3>🌍 Disaster Simulation Explorer</h3>
-
-<p>Select how you want to explore simulations.</p>
-
-<div class="simulation-grid">
-
-<a href="/general" class="sim-card">
-🌐 <br>
-General Simulations
-</a>
-
-<a href="/continents" class="sim-card">
-🌏 <br>
-Continent Simulations
-</a>
-
-<a href="/india" class="sim-card">
-<br>
-India State Simulations
-</a>
-
+<!-- Explorer Section -->
+<h3 class="mb-2 mt-4">Simulation Explorer</h3>
+<p class="text-muted mb-3">Filter potential threat scenarios by global or regional parameters.</p>
+<div class="discover-grid mb-4" style="margin-top:0">
+    <a href="/general" class="discover-card">
+        <div class="icon">🌐</div>
+        <h3>General Scenarios</h3>
+        <p class="text-muted">Explore all documented disasters</p>
+    </a>
+    <a href="/continents" class="discover-card">
+        <div class="icon">🌍</div>
+        <h3>Global Threat Maps</h3>
+        <p class="text-muted">Browse by continent</p>
+    </a>
+    <a href="/india" class="discover-card">
+        <div class="icon">📍</div>
+        <h3>Regional: India</h3>
+        <p class="text-muted">State-level specific scenarios</p>
+    </a>
 </div>
 
+<div class="card mb-4 mt-4" style="padding: 1.5rem">
+    <h3 class="mb-3">Performance Trends</h3>
+    {% if disasters %}
+        <canvas id="progressChart" height="100"></canvas>
+    {% else %}
+        <p class="text-muted text-center py-4">No data available for trends.</p>
+    {% endif %}
 </div>
 
+{% endblock %}
 
-<!-- ================= USER PROGRESS GRAPH ================= -->
-<div class="dashboard-card">
-
-<h3>📊 Your Progress</h3>
-
-{% if disasters %}
-<canvas id="progressChart"></canvas>
-{% else %}
-<p>No simulations attempted yet.</p>
-{% endif %}
-
-</div>
-
-
-<!-- ================= AI RECOMMENDATION ================= -->
-<div class="dashboard-card ai-card">
-
-<h3>🤖 AI Recommendation</h3>
-
-{% if recommendation %}
-
-<p>You need improvement in:</p>
-
-<h2>{{ recommendation }}</h2>
-
-<a href="/simulation/{{ recommendation }}">
-<button class="submit-btn">
-Start Recommended Simulation
-</button>
-</a>
-
-{% else %}
-
-<p>Complete a simulation to get recommendation.</p>
-
-{% endif %}
-
-</div>
-
-</div>
-</div>
-
-
-<!-- ================= CHART JS ================= -->
+{% block head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-
-{% if disasters %}
-
-const ctx = document.getElementById('progressChart');
-
-new Chart(ctx, {
-
-type: 'bar',
-
-data: {
-labels: {{ disasters | tojson }},
-datasets: [{
-label: 'Your Score (%)',
-data: {{ percentages | tojson }},
-backgroundColor: '#1976d2',
-borderRadius: 6
-}]
-},
-
-options: {
-responsive: true,
-
-plugins: {
-legend: {
-display: true
-}
-},
-
-scales: {
-y: {
-beginAtZero: true,
-max: 100
-}
-}
-}
-
+document.addEventListener("DOMContentLoaded", function() {
+    {% if disasters %}
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ disasters | tojson }},
+            datasets: [{
+                label: 'Score Area (%)',
+                data: {{ percentages | tojson }},
+                backgroundColor: '#1976d2',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, max: 100 } }
+        }
+    });
+    {% endif %}
 });
-
-{% endif %}
-
 </script>
-
-</body>
-</html>
+{% endblock %}

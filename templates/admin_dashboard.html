@@ -1,145 +1,153 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - DisasterGuard{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2>Command Center (Admin)</h2>
+    <span class="badge badge-danger">High Privilege Zone</span>
+</div>
 
-<body>
-
-<div class="page-container">
-<div class="card dashboard">
-
-    <!-- TOP BAR -->
-    <div class="top-bar">
-        <h2>Admin Dashboard</h2>
-        <a href="/logout" class="logout-btn">Logout</a>
+<div class="dashboard-grid">
+    <div class="dash-card">
+        <h3>👥 Registered Personnel</h3>
+        <div class="stat-value">{{ users|length }}</div>
     </div>
+    <div class="dash-card">
+        <h3>📝 Pending Feedback</h3>
+        <div class="stat-value">{{ feedbacks|length }}</div>
+    </div>
+    <div class="dash-card">
+        <h3>🎯 Exercises Logged</h3>
+        <div class="stat-value">{{ scores|length }}</div>
+    </div>
+</div>
 
-    <!-- ================= USERS SECTION ================= -->
-    <div class="dashboard-card">
-        <h3>Registered Users</h3>
+<div class="card mb-4">
+    <h3 class="mb-3">📊 Discovered Vulnerabilities (Avg Scores by Scenario)</h3>
+    <canvas id="analyticsChart" height="100"></canvas>
+</div>
 
-        <table class="admin-table">
+<!-- Pending Feedback -->
+<div class="card mb-4 p-0" style="overflow:hidden">
+    <div style="padding:1.5rem 1.5rem 0 1.5rem">
+        <h3 class="mb-2">Incoming Transmissions (Feedback)</h3>
+    </div>
+    {% if feedbacks %}
+        <div class="table-wrapper m-0" style="border:none; border-top:1px solid var(--border-color); border-radius:0">
+            <table>
+                <tr>
+                    <th>From</th>
+                    <th>Message</th>
+                    <th>Action</th>
+                </tr>
+                {% for f in feedbacks %}
+                <tr>
+                    <td style="font-weight:600">{{ f[1] }}</td>
+                    <td>{{ f[2] }}</td>
+                    <td style="min-width: 300px;">
+                        <form action="/reply/{{ f[0] }}" method="post" class="flex gap-2">
+                            <input name="reply" placeholder="HQ reply..." required style="padding:0.5rem">
+                            <button type="submit" class="btn btn-primary btn-sm">Send</button>
+                            <a href="/ignore-feedback/{{ f[0] }}" class="btn btn-outline btn-sm" onclick="return confirm('Ignore transmission?')">Ignore</a>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted p-4 pt-1">No pending transmissions.</p>
+    {% endif %}
+</div>
 
+<!-- Personnel Management -->
+<div class="card mb-4 p-0" style="overflow:hidden">
+    <div style="padding:1.5rem 1.5rem 0 1.5rem">
+        <h3 class="mb-2">Personnel Roster</h3>
+    </div>
+    <div class="table-wrapper m-0" style="border:none; border-top:1px solid var(--border-color); border-radius:0">
+        <table>
             <tr>
-                <th>Name</th>
+                <th>Agent Name</th>
                 <th>Email</th>
-                <th>Last Login</th>
+                <th>Last Comm</th>
                 <th>Actions</th>
             </tr>
-
             {% for u in users %}
             <tr>
                 <td>{{ u[1] }}</td>
                 <td>{{ u[2] }}</td>
-                <td>{{ u[3] }}</td>
+                <td class="text-muted">{{ u[3] }}</td>
                 <td>
-                    <form action="/reset-password/{{ u[0] }}" method="post" style="display:inline;">
-                    <input type="password" name="password" placeholder="New Password" required>
-                    <button type="submit">Reset</button>
+                    <form action="/reset-password/{{ u[0] }}" method="post" class="flex gap-2 items-center">
+                        <input type="password" name="password" placeholder="New Pass" required style="padding:0.4rem; max-width:120px;">
+                        <button type="submit" class="btn btn-outline btn-sm">Reset</button>
+                        <a href="/delete-user/{{ u[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('Revoke agent access permanently?')">Revoke</a>
                     </form>
-                    <a href="/delete-user/{{ u[0] }}"onclick="return confirm('Delete this user?')">
-                       <button type="submit">Delete</button></a>
-                    </a>
                 </td>
             </tr>
             {% endfor %}
         </table>
     </div>
+</div>
 
-    <!-- ================= FEEDBACK SECTION ================= -->
-    <div class="dashboard-card">
-        <h3>User Feedback</h3>
-
-        {% if feedbacks %}
-            {% for f in feedbacks %}
-                <p><b>{{ f[1] }}</b>: {{ f[2] }}</p>
-
-                <form action="/reply/{{ f[0] }}" method="post">
-                    <input name="reply"
-                           placeholder="Reply to user"
-                           required>
-                    <button>Send Reply</button>
-                </form>
-
-                <a href="/ignore-feedback/{{ f[0] }}"
-                   onclick="return confirm('Ignore and delete this feedback?')">
-                   Ignore
-                </a>
-
-                <hr>
-            {% endfor %}
-        {% else %}
-            <p>No feedback available.</p>
-        {% endif %}
+<!-- Operation Logs (Scores) -->
+<div class="card p-0" style="overflow:hidden">
+    <div style="padding:1.5rem 1.5rem 0 1.5rem">
+        <h3 class="mb-2">Operation Logs (Simulation Results)</h3>
     </div>
-
-    <!-- ================= SIMULATION RESULTS ================= -->
-    <div class="dashboard-card">
-        <h3>Simulation Results</h3>
-
-       <table class="admin-table">
-
+    <div class="table-wrapper m-0" style="border:none; border-top:1px solid var(--border-color); border-radius:0; max-height:400px; overflow-y:auto;">
+        <table>
             <tr>
-                <th>Student</th>
-                <th>Disaster</th>
-                <th>Exercise</th>
+                <th>Agent</th>
+                <th>Scenario</th>
+                <th>Ex.#</th>
                 <th>Score</th>
-                <th>Total</th>
-                <th>Date</th>
+                <th>Timestamp</th>
             </tr>
-
             {% for s in scores %}
             <tr>
-                <td>{{ s[0] }}</td>
+                <td style="font-weight:500">{{ s[0] }}</td>
                 <td>{{ s[1] }}</td>
                 <td>{{ s[2] }}</td>
-                <td>{{ s[3] }}</td>
-                <td>{{ s[4] }}</td>
-                <td>{{ s[5] }}</td>
+                <td>
+                    {% if s[3] == s[4] %}
+                        <span class="badge badge-success">{{ s[3] }}/{{ s[4] }}</span>
+                    {% elif s[3] >= (s[4]/2) %}
+                        <span class="badge badge-warning">{{ s[3] }}/{{ s[4] }}</span>
+                    {% else %}
+                        <span class="badge badge-danger">{{ s[3] }}/{{ s[4] }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-muted" style="font-size:0.875rem">{{ s[5] }}</td>
             </tr>
             {% endfor %}
         </table>
     </div>
-
-    <!-- ================= AI ANALYTICS GRAPH ================= -->
-    <div class="dashboard-card">
-        <h3>📊 AI Analytics – Weak Disaster Areas</h3>
-        <canvas id="analyticsChart"></canvas>
-    </div>
-
-</div>
 </div>
 
-<!-- ================= CHART JS ================= -->
+{% endblock %}
+
+{% block head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-const ctx = document.getElementById('analyticsChart');
-
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: {{ analytics_labels | tojson }},
-        datasets: [{
-            label: 'Average Score (%)',
-            data: {{ analytics_values | tojson }},
-            backgroundColor: '#1976d2'
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 100
-            }
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('analyticsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ analytics_labels | tojson }},
+            datasets: [{
+                label: 'Avg Score (%)',
+                data: {{ analytics_values | tojson }},
+                backgroundColor: '#c62828',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, max: 100 } }
         }
-    }
+    });
 });
 </script>
-
-</body>
-</html>
+{% endblock %}

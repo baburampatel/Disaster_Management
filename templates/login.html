@@ -1,33 +1,35 @@
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<div class="page-container">
-  <div class="card">
-    <h2>Login</h2>
-
-    {% with messages = get_flashed_messages(category_filter=["error"]) %}
-    {% for msg in messages %}
-      <div class="error-msg">{{ msg }}</div>
-    {% endfor %}
-    {% endwith %}
-
-    <form method="post">
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <button>Login</button>
-    </form>
-
-    <p style="text-align:center;margin-top:10px;">
-      New user? <a href="/register">Register here</a>
-    </p>
-  </div>
+{% extends "base.html" %}
+{% block title %}Login - DisasterGuard{% endblock %}
+{% block content %}
+<div class="two-column items-center">
+    <div class="hero">
+        <h1>Prepare. Respond. Recover.</h1>
+        <p>Your comprehensive operational command center for managing, analyzing, and improving disaster response preparedness. Log in to access simulations, track regional insights, and manage feedback.</p>
+        <div class="flex justify-center gap-2">
+            <span class="badge badge-success">Simulations</span>
+            <span class="badge badge-warning">Live Analytics</span>
+            <span class="badge badge-danger">Alerts</span>
+        </div>
+    </div>
+    
+    <div class="auth-card">
+        <div class="card">
+            <h2 class="text-center mb-3">Welcome Back</h2>
+            <form method="post">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" placeholder="agent@disaster.gov" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Sign In</button>
+            </form>
+            <p class="text-center mt-3">
+                New responder? <a href="/register">Create an account</a>
+            </p>
+        </div>
+    </div>
 </div>
-
-</body>
-</html>
+{% endblock %}

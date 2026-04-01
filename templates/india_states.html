@@ -1,33 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>India States</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-
-<body>
-
-<div class="page-container">
-<div class="card">
-
-<h2 class="page-title">Select Indian State</h2>
-
-<div class="state-grid">
-
-{% for state in states %}
-
-<a href="/india/{{ state }}" class="state-card">
-{{ state }}
-</a>
-
-{% endfor %}
-
+{% extends "base.html" %}
+{% block title %}States - DisasterGuard{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2>Regional Threat Map (India)</h2>
+    <a href="/user" class="btn btn-outline btn-sm">⬅ Dashboard</a>
 </div>
 
-<a href="/user" class="back-btn">⬅ Back to Dashboard</a>
-
+<div class="discover-grid">
+    {% for s in states %}
+    <a href="/india/{{ s }}" class="discover-card" style="border-top: 4px solid var(--accent-color)">
+        <div class="icon">📍</div>
+        <h3>{{ s }}</h3>
+        <p class="text-muted mt-2" style="font-size:0.875rem">View localized state scenarios</p>
+    </a>
+    {% endfor %}
 </div>
-</div>
-
-</body>
-</html>
+{% endblock %}

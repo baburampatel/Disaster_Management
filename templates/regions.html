@@ -1,33 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Select Region</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-
-<body>
-
-<div class="page-container">
-
-<h2>Select Simulation Region</h2>
-
-<div class="region-grid">
-
-<a href="/general" class="region-card">
-General Simulations
-</a>
-
-<a href="/continents" class="region-card">
-Continent Simulations
-</a>
-
-<a href="/india" class="region-card">
-India (State Simulations)
-</a>
-
+{% extends "base.html" %}
+{% block title %}Regions - DisasterGuard{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2>Select Simulation Region</h2>
+    <a href="/user" class="btn btn-outline btn-sm">⬅ Dashboard</a>
 </div>
 
+<div class="discover-grid">
+    <a href="/general" class="discover-card">
+        <div class="icon">🌐</div>
+        <h3>General Scenarios</h3>
+        <p class="text-muted mt-2" style="font-size:0.875rem">Explore all documented disasters globally</p>
+    </a>
+    <a href="/continents" class="discover-card">
+        <div class="icon">🌍</div>
+        <h3>Continents</h3>
+        <p class="text-muted mt-2" style="font-size:0.875rem">Browse simulations by continent</p>
+    </a>
+    <a href="/india" class="discover-card">
+        <div class="icon">📍</div>
+        <h3>India States</h3>
+        <p class="text-muted mt-2" style="font-size:0.875rem">Target specific states of India</p>
+    </a>
 </div>
-
-</body>
-</html>
+{% endblock %}

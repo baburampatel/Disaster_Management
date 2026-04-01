@@ -1,29 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ disaster }} Exercises</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-
-<div class="page-container">
-<div class="card dashboard">
-
-<a href="/simulation/{{ disaster }}" class="logout-btn">Back</a>
-
-<h2>{{ disaster }} – Exercises</h2>
-
-<div class="exercise-grid">
-{% for i in range(1,11) %}
-    <a href="/simulation/{{ disaster }}/exercise/{{ i }}" class="exercise-box">
-        Exercise {{ i }}
-        <span>20 Questions</span>
-    </a>
-{% endfor %}
+{% extends "base.html" %}
+{% block title %}{{ disaster }} Exercises - DisasterGuard{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2>{{ disaster }} – Exercises</h2>
+    <a href="/simulation/{{ disaster }}" class="btn btn-outline btn-sm">⬅ Back to Scenario</a>
 </div>
 
+<div class="card mb-4">
+    <p class="text-muted mb-4">Select an exercise variant to test your knowledge on {{ disaster }} preparedness and response protocols.</p>
+    
+    <div class="discover-grid mt-0">
+    {% for i in range(1,11) %}
+        <a href="/simulation/{{ disaster }}/exercise/{{ i }}" class="discover-card p-3" style="text-align: left; background: var(--bg-page)">
+            <h3 class="mb-1">Variant {{ i }}</h3>
+            <div class="flex justify-between items-center mt-2">
+                <span class="badge badge-warning">20 Questions</span>
+                <span class="text-muted">Start →</span>
+            </div>
+        </a>
+    {% endfor %}
+    </div>
 </div>
-</div>
-
-</body>
-</html>
+{% endblock %}
