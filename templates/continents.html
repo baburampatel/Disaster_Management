@@ -1,18 +1,15 @@
-{% extends "base.html" %}
-{% block title %}Continents - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}Continents — DisasterGuard{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2>Global Threat Map (Continents)</h2>
-    <a href="/user" class="btn btn-outline btn-sm">⬅ Dashboard</a>
-</div>
-
+<div class="mini-hero"><h1>🗺️ Disasters by Continent</h1><p style="color:rgba(255,255,255,.85);">Explore disaster risks across different continents of the world.</p></div>
+{% set icons = {'Asia':'🌏','Africa':'🌍','Europe':'🌍','North America':'🌎','South America':'🌎','Australia':'🌏','Antarctica':'❄️'} %}
 <div class="discover-grid">
-    {% for c in continents %}
-    <a href="/continent/{{ c }}" class="discover-card" style="border-top: 4px solid var(--primary-light)">
-        <div class="icon">🌍</div>
-        <h3>{{ c }}</h3>
-        <p class="text-muted mt-2" style="font-size:0.875rem">View localized simulations for this region</p>
-    </a>
-    {% endfor %}
+{% for c in continents %}
+<a href="/continent/{{ c }}" class="discover-card" id="continent-{{ c|lower|replace(' ','-') }}-btn">
+    <div class="icon">{{ icons.get(c,'🌍') }}</div>
+    <h3>{{ c }}</h3>
+    <p>View disasters</p>
+</a>
+{% endfor %}
 </div>
 {% endblock %}

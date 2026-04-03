@@ -1,0 +1,159 @@
+﻿{% extends 'base.html' %}
+{% block title %}Content Manager — Admin — DisasterGuard{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:1rem;">
+    <div>
+        <h1 style="margin-bottom:.25rem;">📝 Content Manager</h1>
+        <p style="margin:0;">Manage alerts, emergency contacts, and incident reports</p>
+    </div>
+    <a href="/admin" class="btn btn-ghost btn-sm" id="content-back-btn">← Back to Dashboard</a>
+</div>
+
+<!-- Alerts Section -->
+<div class="card mb-4">
+    <div class="flex items-center justify-between mb-3" style="flex-wrap:wrap;gap:1rem;">
+        <h3 class="card-title" style="margin:0;">🚨 Active Alerts ({{ alerts|length }})</h3>
+    </div>
+    <!-- Add Alert Form -->
+    <form action="/admin/add-alert" method="POST" class="card mb-3" style="background:var(--bg-page);" id="add-alert-form">
+        <h4 class="card-title">➕ Publish New Alert</h4>
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">Alert Title *</label>
+                <input type="text" name="title" class="form-control" placeholder="e.g. Flood Warning — Assam" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Severity *</label>
+                <select name="severity" class="form-control" required>
+                    <option value="critical">🔴 Critical</option>
+                    <option value="high">🟠 High</option>
+                    <option value="medium" selected>🟡 Medium</option>
+                    <option value="low">🟢 Low</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Location</label>
+            <input type="text" name="location" class="form-control" placeholder="e.g. Assam, Bihar">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Alert Message *</label>
+            <textarea name="message" class="form-control" rows="3" placeholder="Describe the alert in detail..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-danger btn-sm" id="publish-alert-btn">🚨 Publish Alert</button>
+    </form>
+    <!-- Alerts Table -->
+    {% if alerts %}
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th>Title</th><th>Severity</th><th>Location</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for a in alerts %}
+            <tr>
+                <td><strong>{{ a['title'] }}</strong><br><small style="color:var(--text-muted);">{{ a['message'][:60] }}...</small></td>
+                <td><span class="badge badge-{{ a['severity'] }}">{{ a['severity']|upper }}</span></td>
+                <td style="font-size:.85rem;">{{ a['location'] or '—' }}</td>
+                <td style="font-size:.75rem;color:var(--text-muted);">{{ a['created_at'][:10] if a['created_at'] else '—' }}</td>
+                <td><a href="/admin/delete-alert/{{ a['id'] }}" class="btn btn-danger btn-sm" id="del-alert-{{ a['id'] }}-btn" onclick="return confirm('Delete alert?')">Delete</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center text-muted" style="padding:1.5rem;">No alerts published yet.</p>
+    {% endif %}
+</div>
+
+<!-- Emergency Contacts Section -->
+<div class="card mb-4">
+    <h3 class="card-title">📞 Emergency Contacts ({{ contacts|length }})</h3>
+    <!-- Add Contact Form -->
+    <form action="/admin/add-contact" method="POST" class="card mb-3" style="background:var(--bg-page);" id="add-contact-form">
+        <h4 class="card-title">➕ Add Emergency Contact</h4>
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">Name *</label>
+                <input type="text" name="name" class="form-control" placeholder="e.g. Chennai Disaster Cell" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Number *</label>
+                <input type="text" name="number" class="form-control" placeholder="e.g. 044-25384510" required>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">Category *</label>
+                <select name="category" class="form-control" required>
+                    <option value="national">National</option>
+                    <option value="disaster">Disaster</option>
+                    <option value="medical">Medical</option>
+                    <option value="police">Police</option>
+                    <option value="fire">Fire</option>
+                    <option value="safety">Safety</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Region</label>
+                <input type="text" name="region" class="form-control" placeholder="e.g. Tamil Nadu or All India">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <input type="text" name="description" class="form-control" placeholder="Brief description of this contact">
+        </div>
+        <button type="submit" class="btn btn-success btn-sm" id="add-contact-btn">➕ Add Contact</button>
+    </form>
+    <div class="table-wrapper" style="max-height:300px;overflow-y:auto;">
+        <table>
+            <thead><tr><th>Name</th><th>Number</th><th>Category</th><th>Region</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for c in contacts %}
+            <tr>
+                <td><strong>{{ c['name'] }}</strong></td>
+                <td style="font-weight:700;color:var(--primary-dark);">{{ c['number'] }}</td>
+                <td><span class="badge badge-primary">{{ c['category'] }}</span></td>
+                <td style="font-size:.8rem;color:var(--text-muted);">{{ c['region'] }}</td>
+                <td><a href="/admin/delete-contact/{{ c['id'] }}" class="btn btn-danger btn-sm" id="del-contact-{{ c['id'] }}-btn" onclick="return confirm('Delete contact?')">Del</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Incident Reports Section -->
+<div class="card">
+    <h3 class="card-title">⚠️ Incident Reports ({{ incidents|length }})</h3>
+    {% if incidents %}
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th>Type</th><th>Location</th><th>Severity</th><th>Status</th><th>Reported</th><th>Update</th></tr></thead>
+            <tbody>
+            {% for inc in incidents %}
+            <tr>
+                <td><strong>{{ inc['incident_type'] }}</strong></td>
+                <td style="font-size:.85rem;">{{ inc['location'] }}</td>
+                <td><span class="badge badge-{{ inc['severity'] }}">{{ inc['severity']|upper }}</span></td>
+                <td><span class="badge {% if inc['status']=='resolved' %}badge-success{% elif inc['status']=='investigating' %}badge-medium{% else %}badge-danger{% endif %}">{{ inc['status']|title }}</span></td>
+                <td style="font-size:.75rem;color:var(--text-muted);">{{ inc['reported_at'][:10] if inc['reported_at'] else '—' }}</td>
+                <td>
+                    <form action="/admin/update-incident/{{ inc['id'] }}" method="POST" class="flex gap-1">
+                        <select name="status" class="form-control" style="font-size:.8rem;padding:.3rem .5rem;width:120px;">
+                            <option value="pending" {% if inc['status']=='pending' %}selected{% endif %}>Pending</option>
+                            <option value="investigating" {% if inc['status']=='investigating' %}selected{% endif %}>Investigating</option>
+                            <option value="resolved" {% if inc['status']=='resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
+                        <button type="submit" class="btn btn-outline btn-sm" id="update-inc-{{ inc['id'] }}-btn">Save</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center text-muted" style="padding:1.5rem;">No incident reports yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

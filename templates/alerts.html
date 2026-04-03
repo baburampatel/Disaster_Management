@@ -1,0 +1,81 @@
+﻿{% extends 'base.html' %}
+{% block title %}Active Alerts — DisasterGuard{% endblock %}
+{% block content %}
+<div class="mini-hero" style="background:linear-gradient(135deg,#b71c1c,#e53935);">
+    <h1>🚨 Active Disaster Alerts</h1>
+    <p style="color:rgba(255,255,255,.85);">Real-time alerts sorted by severity. Stay informed and take action.</p>
+</div>
+
+{% set sev_order = ['critical','high','medium','low'] %}
+{% set sev_icons = {'critical':'🔴','high':'🟠','medium':'🟡','low':'🟢'} %}
+
+<div class="flex items-center justify-between mb-3" style="flex-wrap:wrap;gap:1rem;">
+    <p>{{ alerts|length }} active alert{{ 's' if alerts|length != 1 else '' }}</p>
+    <select id="severity-filter" class="form-control" style="max-width:200px;">
+        <option value="">All Severities</option>
+        <option value="critical">🔴 Critical</option>
+        <option value="high">🟠 High</option>
+        <option value="medium">🟡 Medium</option>
+        <option value="low">🟢 Low</option>
+    </select>
+</div>
+
+{% if alerts %}
+{% for alert in alerts %}
+{% set sev = alert['severity'] if alert['severity'] else 'medium' %}
+<div class="alert-banner alert-{{ sev }} alert-item" data-severity="{{ sev }}" id="alert-{{ alert['id'] }}">
+    <div class="alert-icon" style="font-size:2rem;">{{ sev_icons.get(sev,'⚡') }}</div>
+    <div class="alert-body" style="flex:1;">
+        <div class="flex items-center gap-2 mb-1" style="flex-wrap:wrap;">
+            <h4>{{ alert['title'] }}</h4>
+            <span class="badge badge-{{ sev }}">{{ sev.upper() }}</span>
+        </div>
+        <p style="color:var(--text-main);margin-bottom:.5rem;">{{ alert['message'] }}</p>
+        <div class="alert-meta flex gap-3" style="flex-wrap:wrap;">
+            <span>📍 {{ alert['location'] or 'India' }}</span>
+            <span>🕐 {{ alert['created_at'][:16] if alert['created_at'] else '' }}</span>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="card text-center" style="padding:4rem 2rem;">
+    <div style="font-size:3rem;margin-bottom:1rem;">✅</div>
+    <h3>No Active Alerts</h3>
+    <p>There are currently no active disaster alerts. Stay prepared!</p>
+    <a href="/preparedness-checklist" class="btn btn-primary mt-2" id="alerts-checklist-btn">View Preparedness Checklist</a>
+</div>
+{% endif %}
+
+<div class="card mt-4" style="border-left:4px solid var(--primary-light);">
+    <h3 class="card-title">📞 In Case of Emergency</h3>
+    <div class="grid-3">
+        <div class="text-center">
+            <div style="font-size:2rem;">🚨</div>
+            <strong>National Emergency</strong>
+            <div style="font-size:1.5rem;font-weight:800;color:var(--danger);">112</div>
+        </div>
+        <div class="text-center">
+            <div style="font-size:2rem;">🌊</div>
+            <strong>NDMA Disaster</strong>
+            <div style="font-size:1.5rem;font-weight:800;color:var(--primary-dark);">1078</div>
+        </div>
+        <div class="text-center">
+            <div style="font-size:2rem;">🚑</div>
+            <strong>Ambulance</strong>
+            <div style="font-size:1.5rem;font-weight:800;color:var(--success);">102</div>
+        </div>
+    </div>
+    <a href="/emergency-contacts" class="btn btn-outline btn-sm mt-3" id="alerts-all-contacts-btn">View All Emergency Contacts</a>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('severity-filter').addEventListener('change', function() {
+    const val = this.value;
+    document.querySelectorAll('.alert-item').forEach(el => {
+        el.style.display = (!val || el.dataset.severity === val) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

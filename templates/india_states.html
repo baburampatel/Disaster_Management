@@ -1,18 +1,13 @@
-{% extends "base.html" %}
-{% block title %}States - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}India States — DisasterGuard{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2>Regional Threat Map (India)</h2>
-    <a href="/user" class="btn btn-outline btn-sm">⬅ Dashboard</a>
-</div>
-
+<div class="mini-hero" style="background:linear-gradient(135deg,#e65100,#f57c00);"><h1>🇮🇳 India — Disaster Risk by State</h1><p style="color:rgba(255,255,255,.85);">Select your state to see relevant disaster information and risks.</p></div>
 <div class="discover-grid">
-    {% for s in states %}
-    <a href="/india/{{ s }}" class="discover-card" style="border-top: 4px solid var(--accent-color)">
-        <div class="icon">📍</div>
-        <h3>{{ s }}</h3>
-        <p class="text-muted mt-2" style="font-size:0.875rem">View localized state scenarios</p>
-    </a>
-    {% endfor %}
+{% for s in states %}
+<a href="/india/{{ s }}" class="discover-card" id="state-{{ s|lower|replace(' ','-') }}-btn">
+    <div class="icon">🏛️</div>
+    <h3 style="font-size:.9rem;">{{ s }}</h3>
+</a>
+{% endfor %}
 </div>
 {% endblock %}

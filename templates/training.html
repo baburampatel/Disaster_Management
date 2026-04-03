@@ -1,0 +1,68 @@
+﻿{% extends 'base.html' %}
+{% block title %}Training Center — DisasterGuard{% endblock %}
+{% block content %}
+<div class="mini-hero">
+    <h1>🎯 Training Center</h1>
+    <p>Test your knowledge with interactive exercises. Complete all exercises to become a certified disaster preparedness expert.</p>
+</div>
+
+{% set icons = {
+    'Earthquake':'🌍','Flood':'🌊','Cyclone':'🌀','Tsunami':'🌊',
+    'Landslide':'⛰️','Drought':'☀️','Fire':'🔥','Wildfire':'🌲',
+    'Tornado':'🌪️','Heatwave':'🌡️'
+} %}
+
+<div class="flex items-center justify-between mb-3" style="flex-wrap:wrap;gap:1rem;">
+    <p>{{ disasters|length }} disaster types · 3 exercises each</p>
+    <a href="/disaster-library" class="btn btn-outline btn-sm" id="training-library-btn">📚 Study First</a>
+</div>
+
+<div class="auto-grid-md">
+{% for disaster in disasters %}
+{% set ex1_score = completed.get((disaster, 1)) %}
+{% set ex2_score = completed.get((disaster, 2)) %}
+{% set ex3_score = completed.get((disaster, 3)) %}
+<div class="card" style="border-top:3px solid var(--primary-light);">
+    <div class="flex items-center gap-2 mb-3">
+        <span style="font-size:2rem;">{{ icons.get(disaster,'⚡') }}</span>
+        <div>
+            <h3 style="margin:0;">{{ disaster }}</h3>
+            <div class="flex gap-1 mt-1">
+                {% set done = [ex1_score, ex2_score, ex3_score]|select('ne', None)|list|length %}
+                <span class="badge {% if done == 3 %}badge-success{% elif done > 0 %}badge-medium{% else %}badge-muted{% endif %}">
+                    {{ done }}/3 done
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;">
+        {% for ex_num in [1,2,3] %}
+        {% set score = completed.get((disaster, ex_num)) %}
+        <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .9rem;border:1px solid var(--border);border-radius:var(--r-md);background:{% if score is not none %}{% if score >= 80 %}var(--success-bg){% elif score >= 50 %}var(--warning-bg){% else %}var(--danger-bg){% endif %}{% else %}#fff{% endif %};">
+            <span style="font-size:1.1rem;">{{ '✅' if score is not none and score >= 80 else '🟡' if score is not none else '⬜' }}</span>
+            <div style="flex:1;">
+                <strong style="font-size:.85rem;">Exercise {{ ex_num }}</strong>
+                {% if score is not none %}
+                <span style="font-size:.75rem;color:var(--text-muted);"> — Best: {{ score }}%</span>
+                {% else %}
+                <span style="font-size:.75rem;color:var(--text-muted);"> — Not started</span>
+                {% endif %}
+            </div>
+            <a href="/simulation/{{ disaster }}/exercise/{{ ex_num }}"
+               class="btn {% if score is not none %}btn-outline{% else %}btn-primary{% endif %} btn-sm"
+               id="train-{{ disaster|lower|replace(' ','-') }}-ex{{ ex_num }}-btn">
+               {{ 'Retry' if score is not none else 'Start' }}
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="flex gap-2">
+        <a href="/simulation/{{ disaster }}" class="btn btn-ghost btn-sm" id="train-details-{{ disaster|lower|replace(' ','-') }}-btn">📋 Details</a>
+        <a href="/disaster/{{ disaster }}/guide" class="btn btn-ghost btn-sm" id="train-guide-{{ disaster|lower|replace(' ','-') }}-btn">📖 Guide</a>
+    </div>
+</div>
+{% endfor %}
+</div>
+{% endblock %}

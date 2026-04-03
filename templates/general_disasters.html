@@ -1,24 +1,15 @@
-{% extends "base.html" %}
-{% block title %}General Disasters - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}General Disasters — DisasterGuard{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2>General Disaster Scenarios</h2>
-    <a href="/user" class="btn btn-outline btn-sm">⬅ Dashboard</a>
-</div>
-
-{% if disasters %}
+<div class="mini-hero"><h1>🌐 All Disaster Types</h1><p style="color:rgba(255,255,255,.85);">Browse all disaster types available for study and training.</p></div>
+{% set icons = {'Earthquake':'🌍','Flood':'🌊','Cyclone':'🌀','Tsunami':'🌊','Landslide':'⛰️','Drought':'☀️','Fire':'🔥','Wildfire':'🌲','Tornado':'🌪️','Heatwave':'🌡️'} %}
 <div class="discover-grid">
-    {% for d in disasters %}
-    <a href="/simulation/{{ d[0] }}" class="discover-card">
-        <div class="icon">🌪️</div>
-        <h3>{{ d[0] }}</h3>
-        <p class="text-muted mt-2" style="font-size:0.875rem">View scenario details, case studies, and exercises</p>
-    </a>
-    {% endfor %}
+{% for d in disasters %}
+<a href="/simulation/{{ d[0] }}" class="discover-card" id="gen-disaster-{{ d[0]|lower|replace(' ','-') }}-btn">
+    <div class="icon">{{ icons.get(d[0],'⚡') }}</div>
+    <h3>{{ d[0] }}</h3>
+    <p>Study details & exercises</p>
+</a>
+{% endfor %}
 </div>
-{% else %}
-<div class="card text-center py-4">
-    <p class="text-muted mb-0">No tactical simulations available globally.</p>
-</div>
-{% endif %}
 {% endblock %}

@@ -1,24 +1,23 @@
-{% extends "base.html" %}
-{% block title %}Disasters in {{ state }} - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}{{ state }} Disasters — DisasterGuard{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2>Disaster Scenarios: {{ state }}</h2>
-    <a href="/india" class="btn btn-outline btn-sm">⬅ States</a>
-</div>
-
+<div class="mini-hero" style="background:linear-gradient(135deg,#e65100,#f57c00);"><h1>🏛️ {{ state }}</h1><p style="color:rgba(255,255,255,.85);">Disaster types relevant to {{ state }}.</p></div>
+<a href="/india" class="btn btn-ghost btn-sm mb-3" id="state-back-btn">← Back to India Map</a>
+{% set icons = {'Earthquake':'🌍','Flood':'🌊','Cyclone':'🌀','Tsunami':'🌊','Landslide':'⛰️','Drought':'☀️','Fire':'🔥','Wildfire':'🌲','Tornado':'🌪️','Heatwave':'🌡️'} %}
 {% if disasters %}
 <div class="discover-grid">
-    {% for d in disasters %}
-    <a href="/simulation/{{ d[0] }}" class="discover-card">
-        <div class="icon">🚨</div>
-        <h3>{{ d[0] }}</h3>
-        <p class="text-muted mt-2" style="font-size:0.875rem">View scenario details</p>
-    </a>
-    {% endfor %}
+{% for d in disasters %}
+<a href="/simulation/{{ d[0] }}" class="discover-card" id="state-disaster-{{ d[0]|lower|replace(' ','-') }}-btn">
+    <div class="icon">{{ icons.get(d[0],'⚡') }}</div>
+    <h3>{{ d[0] }}</h3>
+    <p>View guide & exercises</p>
+</a>
+{% endfor %}
 </div>
 {% else %}
-<div class="card text-center py-4">
-    <p class="text-muted mb-0">No simulated threat data available for this state.</p>
+<div class="card text-center" style="padding:3rem;">
+    <p>No specific disasters listed for {{ state }} yet. Browse all types below.</p>
+    <a href="/general" class="btn btn-primary mt-2" id="state-all-btn">View All Disasters</a>
 </div>
 {% endif %}
 {% endblock %}

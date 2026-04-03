@@ -1,0 +1,92 @@
+﻿{% extends 'base.html' %}
+{% block title %}Emergency Shelters — DisasterGuard{% endblock %}
+{% block content %}
+<div class="mini-hero" style="background:linear-gradient(135deg,#1a237e,#283593);">
+    <h1>🏠 Emergency Shelters</h1>
+    <p style="color:rgba(255,255,255,.85);">Find the nearest emergency shelter with real-time capacity and contact information.</p>
+</div>
+
+<div class="flex items-center justify-between mb-3" style="flex-wrap:wrap;gap:1rem;">
+    <p>{{ shelters|length }} shelter{{ 's' if shelters|length!=1 else '' }} listed</p>
+    <div class="flex gap-2" style="flex-wrap:wrap;">
+        <input type="text" id="shelter-search" class="form-control" placeholder="🔍 Search by city or state..." style="max-width:240px;">
+        <select id="disaster-filter" class="form-control" style="max-width:180px;">
+            <option value="">All Types</option>
+            <option value="Flood">🌊 Flood</option>
+            <option value="Cyclone">🌀 Cyclone</option>
+            <option value="Earthquake">🌍 Earthquake</option>
+            <option value="Landslide">⛰️ Landslide</option>
+        </select>
+    </div>
+</div>
+
+<div class="auto-grid-md" id="shelter-grid">
+{% for s in shelters %}
+{% set occupancy_pct = ((s['current_occupancy'] / s['capacity']) * 100)|round|int if s['capacity'] > 0 else 0 %}
+<div class="shelter-card shelter-item"
+     data-name="{{ (s['city']|lower + ' ' + s['state']|lower) }}"
+     data-type="{{ s['disaster_type'] }}">
+    <div class="flex items-center justify-between mb-2">
+        <h3 style="font-size:1rem;margin:0;">{{ s['name'] }}</h3>
+        {% if s['is_active'] %}
+            <span class="badge badge-success">Active</span>
+        {% else %}
+            <span class="badge badge-muted">Inactive</span>
+        {% endif %}
+    </div>
+    <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">
+        📍 {{ s['address'] }}, {{ s['city'] }}, {{ s['state'] }}
+    </p>
+    <div class="flex gap-2 mb-2" style="flex-wrap:wrap;">
+        <span class="badge badge-primary">{{ s['disaster_type'] }}</span>
+        <span class="badge badge-muted">Capacity: {{ s['capacity'] }}</span>
+    </div>
+    <div>
+        <div class="flex items-center justify-between" style="font-size:.8rem;">
+            <span>Occupancy</span>
+            <span style="font-weight:600;color:{% if occupancy_pct > 80 %}var(--danger){% elif occupancy_pct > 50 %}var(--accent){% else %}var(--success){% endif %};">
+                {{ s['current_occupancy'] }} / {{ s['capacity'] }} ({{ occupancy_pct }}%)
+            </span>
+        </div>
+        <div class="occupancy-bar">
+            <div class="occupancy-fill" style="width:{{ occupancy_pct }}%;background:{% if occupancy_pct > 80 %}var(--danger){% elif occupancy_pct > 50 %}var(--accent){% else %}var(--success){% endif %};"></div>
+        </div>
+    </div>
+    {% if s['contact'] %}
+    <div class="mt-2 flex items-center gap-2">
+        <span style="font-size:.8rem;color:var(--text-muted);">📞</span>
+        <a href="tel:{{ s['contact'] }}" style="font-size:.9rem;font-weight:600;color:var(--primary-dark);">{{ s['contact'] }}</a>
+    </div>
+    {% endif %}
+    {% if not s['is_active'] %}
+    <div style="margin-top:.75rem;font-size:.75rem;color:var(--text-muted);padding:.5rem;background:#f8fafc;border-radius:var(--r-sm);">
+        ℹ️ This shelter is currently not operational. Contact authorities for alternatives.
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+</div>
+
+{% if not shelters %}
+<div class="card text-center" style="padding:4rem 2rem;">
+    <div style="font-size:3rem;margin-bottom:1rem;">🏠</div>
+    <h3>No Shelters Listed</h3>
+    <p>Shelter information will be updated during active disaster events.</p>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+function filterShelters() {
+    const q = document.getElementById('shelter-search').value.toLowerCase();
+    const type = document.getElementById('disaster-filter').value.toLowerCase();
+    document.querySelectorAll('.shelter-item').forEach(item => {
+        const nameMatch = !q || item.dataset.name.includes(q);
+        const typeMatch = !type || item.dataset.type.toLowerCase() === type;
+        item.style.display = nameMatch && typeMatch ? '' : 'none';
+    });
+}
+document.getElementById('shelter-search').addEventListener('input', filterShelters);
+document.getElementById('disaster-filter').addEventListener('change', filterShelters);
+</script>
+{% endblock %}

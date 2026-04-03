@@ -1,237 +1,194 @@
-<!DOCTYPE html>
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Dashboard - AEGIS MISSION CONTROL</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+﻿{% extends 'base.html' %}
+{% block title %}My Dashboard — DisasterGuard{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:1rem;">
+    <div>
+        <h1 style="margin-bottom:.25rem;">👋 Welcome back, {{ user_name }}!</h1>
+        <p style="margin:0;">Your personal disaster preparedness dashboard</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="/disaster-library" class="btn btn-outline btn-sm" id="dash-library-btn">📚 Library</a>
+        <a href="/training" class="btn btn-primary btn-sm" id="dash-training-btn">🎯 Training</a>
+    </div>
+</div>
+
+<!-- KPI Stats -->
+<div class="grid-4 mb-4">
+    <div class="stat-card">
+        <div class="stat-label">Disasters Attempted</div>
+        <div class="stat-value">{{ percentages | selectattr('__gt__', 0) | list | length if percentages else 0 }}</div>
+        <div class="stat-sub">out of {{ disasters|length }} total</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Avg Readiness Score</div>
+        {% if percentages and percentages|sum > 0 %}
+        <div class="stat-value" style="color: {% if (percentages|sum/percentages|length) >= 70 %}var(--success){% elif (percentages|sum/percentages|length) >= 40 %}var(--accent){% else %}var(--danger){% endif %};">
+            {{ (percentages|sum / percentages|length)|round(1) }}%
+        </div>
+        {% else %}
+        <div class="stat-value" style="font-size:1.75rem;color:var(--text-muted);">N/A</div>
+        {% endif %}
+        <div class="stat-sub">overall preparedness</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Notifications</div>
+        <div class="stat-value" style="color:{% if notifications %}var(--danger){% else %}var(--success){% endif %};">
+            {{ notifications|length if notifications else 0 }}
+        </div>
+        <div class="stat-sub">messages from admin</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Weak Topic</div>
+        <div class="stat-value" style="font-size:1.2rem;color:var(--accent);">{{ weak_topic or "—" }}</div>
+        <div class="stat-sub">needs attention</div>
+    </div>
+</div>
+
+<!-- AI Recommendation -->
+<div class="insight-card mb-4 flex gap-3" style="align-items:flex-start;flex-wrap:wrap;">
+    <div style="font-size:2.5rem;">🤖</div>
+    <div style="flex:1;">
+        <h3>AI Learning Recommendation</h3>
+        {% if recommendation %}
+        <p style="margin-bottom:1rem;">
+            Your performance data shows <strong>{{ weak_topic }}</strong> is your weakest area with the most room to improve. 
+            Focusing here will boost your overall readiness score significantly.
+        </p>
+        <div class="flex gap-2" style="flex-wrap:wrap;">
+            {% if next_exercise %}
+            <a href="/simulation/{{ next_exercise.disaster }}/exercise/{{ next_exercise.exercise }}"
+               class="btn btn-warning btn-sm" id="ai-next-exercise-btn">
+               🎯 Start Exercise {{ next_exercise.exercise }} — {{ next_exercise.disaster }}
+            </a>
+            {% endif %}
+            <a href="/disaster/{{ recommendation }}/guide" class="btn btn-outline btn-sm" id="ai-guide-btn">📖 Read Guide</a>
+        </div>
+        {% else %}
+        <p>Complete your first exercise to receive personalized AI recommendations tailored to your performance.</p>
+        <a href="/training" class="btn btn-primary btn-sm mt-2" id="ai-start-btn">Start Training</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 2-column: Chart + Learning Path -->
+<div class="grid-2 mb-4">
+    <!-- Performance Chart -->
+    <div class="card">
+        <h3 class="card-title">📊 Readiness by Disaster Type</h3>
+        {% if disasters %}
+        <canvas id="readinessChart" height="260"></canvas>
+        {% else %}
+        <div class="text-center" style="padding:3rem 0;color:var(--text-muted);">
+            <div style="font-size:2.5rem;margin-bottom:1rem;">📊</div>
+            <p>Complete exercises to see your performance chart.</p>
+            <a href="/training" class="btn btn-primary btn-sm mt-2" id="chart-start-btn">Start Training</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Learning Path -->
+    <div class="card">
+        <h3 class="card-title">🗺️ Recommended Learning Path</h3>
+        {% if learning_path %}
+        <p class="mb-3" style="font-size:.875rem;">Focus on these disaster types in order of priority:</p>
+        {% for item in learning_path %}
+        <div style="margin-bottom:1rem;">
+            <div class="flex items-center justify-between mb-1">
+                <span style="font-weight:600;font-size:.9rem;">
+                    {% if loop.index == 1 %}🔴{% elif loop.index == 2 %}🟠{% else %}🟡{% endif %}
+                    {{ item.disaster }}
+                </span>
+                <span class="badge {% if item.score < 40 %}badge-critical{% elif item.score < 70 %}badge-high{% else %}badge-success{% endif %}">{{ item.score }}%</span>
+            </div>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill {% if item.score < 40 %}fill-danger{% elif item.score < 70 %}fill-warning{% else %}fill-success{% endif %}"
+                     style="width:{{ item.score }}%"></div>
+            </div>
+            <div class="flex gap-1 mt-1">
+                <a href="/simulation/{{ item.disaster }}" class="btn btn-ghost btn-sm" style="font-size:.75rem;" id="lp-details-{{ loop.index }}-btn">Details</a>
+                <a href="/disaster/{{ item.disaster }}/guide" class="btn btn-ghost btn-sm" style="font-size:.75rem;" id="lp-guide-{{ loop.index }}-btn">Guide</a>
+                <a href="/simulation/{{ item.disaster }}/exercises" class="btn btn-outline btn-sm" style="font-size:.75rem;" id="lp-exercise-{{ loop.index }}-btn">Train</a>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center" style="padding:2rem 0;color:var(--text-muted);">
+            <p>Take some exercises to generate your personalized learning path.</p>
+            <a href="/training" class="btn btn-primary btn-sm mt-2" id="path-start-btn">Begin Training</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Notifications / Quick Links -->
+<div class="grid-2">
+    <!-- HQ Notifications -->
+    <div class="card">
+        <h3 class="card-title">🔔 Admin Messages</h3>
+        {% if notifications %}
+        {% for n in notifications %}
+        <div class="alert-banner alert-medium mb-2" style="border-left-color:var(--primary-light);">
+            <div class="alert-icon">💬</div>
+            <div class="alert-body" style="flex:1;">
+                <h4 style="color:var(--primary-dark);">Reply received</h4>
+                <p>{{ n[2] }}</p>
+            </div>
+            <a href="/delete-notification/{{ n[0] }}" class="btn btn-ghost btn-sm" id="dismiss-notif-{{ n[0] }}-btn" title="Dismiss">✕</a>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center" style="padding:2rem 0;color:var(--text-muted);">
+            <div style="font-size:2rem;margin-bottom:.5rem;">✅</div>
+            <p>No new messages. You're all caught up!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <h3 class="card-title">⚡ Quick Actions</h3>
+        <div class="flex flex-col gap-2">
+            <a href="/alerts" class="btn btn-danger" id="dash-alerts-btn">🚨 View Active Alerts</a>
+            <a href="/emergency-contacts" class="btn btn-outline" id="dash-emergency-btn">📞 Emergency Contacts</a>
+            <a href="/shelters" class="btn btn-outline" id="dash-shelters-btn">🏠 Find Nearest Shelter</a>
+            <a href="/report-incident" class="btn btn-warning" id="dash-report-btn">⚠️ Report an Incident</a>
+            <a href="/preparedness-checklist" class="btn btn-outline" id="dash-checklist-btn">✅ Preparedness Checklist</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+{% if disasters %}
 <script>
-tailwind.config = {
-    darkMode: "class",
-    theme: {
-        extend: {
-            colors: {
-                "inverse-on-surface": "#2e3037",
-                "on-background": "#e1e2eb",
-                "tertiary-fixed-dim": "#00dddd",
-                "error": "#ffb4ab",
-                "inverse-primary": "#006a6a",
-                "on-secondary-fixed-variant": "#832700",
-                "inverse-surface": "#e1e2eb",
-                "surface": "#10131a",
-                "on-surface": "#e1e2eb",
-                "error-container": "#93000a",
-                "on-tertiary": "#003737",
-                "on-error-container": "#ffdad6",
-                "surface-container": "#1d2026",
-                "surface-container-high": "#272a31",
-                "on-error": "#690005",
-                "on-primary": "#003737",
-                "on-primary-fixed": "#002020",
-                "tertiary": "#ffffff",
-                "on-tertiary-container": "#007070",
-                "on-secondary-container": "#511500",
-                "tertiary-fixed": "#00fbfb",
-                "on-tertiary-fixed": "#002020",
-                "secondary-fixed": "#ffdbcf",
-                "secondary": "#ffb59c",
-                "surface-container-low": "#191c22",
-                "tertiary-container": "#00fbfb",
-                "secondary-container": "#fa5c1c",
-                "outline-variant": "#3a4a49",
-                "primary-fixed-dim": "#00dddd",
-                "outline": "#839493",
-                "surface-bright": "#363940",
-                "on-secondary": "#5c1900",
-                "primary-fixed": "#00fbfb",
-                "surface-tint": "#00dddd",
-                "primary": "#ffffff",
-                "secondary-fixed-dim": "#ffb59c",
-                "on-primary-fixed-variant": "#004f4f",
-                "surface-container-highest": "#32353c",
-                "background": "#10131a",
-                "on-primary-container": "#007070",
-                "on-secondary-fixed": "#390c00",
-                "surface-variant": "#32353c",
-                "surface-dim": "#10131a",
-                "on-surface-variant": "#b9cac9",
-                "on-tertiary-fixed-variant": "#004f4f",
-                "primary-container": "#00fbfb",
-                "surface-container-lowest": "#0b0e14"
-            },
-            fontFamily: {
-                "headline": ["Space Grotesk"],
-                "body": ["Inter"],
-                "label": ["Inter"],
-                "mono": ["JetBrains Mono"]
-            }
+const ctx = document.getElementById('readinessChart').getContext('2d');
+const labels = {{ disasters | tojson }};
+const values = {{ percentages | tojson }};
+const colors = values.map(v => v >= 70 ? 'rgba(46,125,50,.8)' : v >= 40 ? 'rgba(245,124,0,.8)' : 'rgba(198,40,40,.8)');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Score %',
+            data: values,
+            backgroundColor: colors,
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } },
+            x: { ticks: { maxRotation: 45 } }
         }
     }
-}
+});
 </script>
-<style>
-.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-.glass-panel { background: rgba(25, 28, 34, 0.6); backdrop-filter: blur(20px); border-top: 0.5px solid rgba(255, 255, 255, 0.1); }
-.ghost-border { border: 1px solid rgba(58, 74, 73, 0.2); }
-.molten-gradient { background: linear-gradient(135deg, #FFB59C 0%, #FA5C1C 100%); }
-.pulse-ring { position: relative; }
-.pulse-ring::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: #FA5C1C; opacity: 0.5; animation: pulse 2s infinite; }
-@keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(3); opacity: 0; } }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #0b0e14; }
-::-webkit-scrollbar-thumb { background: #1d2026; border-radius: 10px; }
-body { min-height: max(884px, 100dvh); background-color: #0b0e14; }
-</style>
-</head>
-<body class="bg-surface-container-lowest font-body text-on-surface antialiased overflow-x-hidden">
-
-<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-slate-950/60 backdrop-blur-xl border-b border-cyan-500/15 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
-    <div class="flex items-center gap-4">
-        <a href="/" class="text-xl font-bold tracking-tighter text-cyan-400 drop-shadow-[0_0_8px_rgba(0,251,251,0.5)] font-headline uppercase" style="text-decoration:none;">AEGIS COMMAND</a>
-    </div>
-    <div class="flex items-center gap-6">
-        <a href="/logout" class="text-xs uppercase tracking-widest text-outline hover:text-cyan-400 transition-colors" style="text-decoration:none;">Logout</a>
-        <button class="text-cyan-400 active:scale-95 duration-150 p-2 hover:bg-cyan-500/10 transition-colors rounded-lg relative">
-            <span class="material-symbols-outlined">notifications</span>
-            {% if notifications %}
-            <span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full border border-surface-container-lowest"></span>
-            {% endif %}
-        </button>
-    </div>
-</header>
-
-<aside class="hidden lg:flex fixed inset-y-0 left-0 z-[60] w-72 flex-col bg-slate-950/80 backdrop-blur-2xl rounded-r-lg border-r border-cyan-500/10 mt-16 shadow-2xl shadow-cyan-900/20 divide-y divide-cyan-500/5">
-    <div class="p-6 flex flex-col items-start gap-4">
-        <div>
-            <h3 class="font-headline font-bold text-cyan-400 text-lg uppercase tracking-tight m-0">RESPONDER_{{ session.get('user_id', 'ONE') }}</h3>
-            <p class="text-[10px] tracking-widest text-slate-400 uppercase m-0 mt-1">Field Operative • Active Duty</p>
-        </div>
-    </div>
-    <nav class="flex-1 py-4 px-3 space-y-1">
-        <a class="flex items-center gap-4 px-4 py-3 bg-gradient-to-r from-orange-500/20 to-transparent text-orange-400 border-l-2 border-orange-500 transition-all duration-300 font-headline text-sm tracking-widest uppercase" href="/user" style="text-decoration:none;">
-            <span class="material-symbols-outlined">dashboard</span>
-            <span>Dashboard</span>
-        </a>
-        <a class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-cyan-200 hover:bg-slate-800/50 transition-all duration-300 font-headline text-sm tracking-widest uppercase" href="/general" style="text-decoration:none;">
-            <span class="material-symbols-outlined">public</span>
-            <span>Global Intel</span>
-        </a>
-        <a class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-cyan-200 hover:bg-slate-800/50 transition-all duration-300 font-headline text-sm tracking-widest uppercase" href="/india" style="text-decoration:none;">
-            <span class="material-symbols-outlined">explore</span>
-            <span>Regional Map</span>
-        </a>
-        <a class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-cyan-200 hover:bg-slate-800/50 transition-all duration-300 font-headline text-sm tracking-widest uppercase" href="/feedback-page" style="text-decoration:none;">
-            <span class="material-symbols-outlined">settings_input_antenna</span>
-            <span>Tx Feedback</span>
-        </a>
-    </nav>
-</aside>
-
-<main class="pt-24 pb-24 px-4 md:px-8 lg:ml-72 max-w-7xl mx-auto space-y-6">
-    <!-- KPI Metrics -->
-    <section class="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <div class="glass-panel ghost-border rounded-lg p-4 flex flex-col justify-between">
-            <span class="text-[10px] uppercase tracking-widest text-outline font-label">Active Sims</span>
-            <div class="flex items-end gap-2 mt-2">
-                <span class="text-3xl font-headline font-bold text-primary">{{ percentages|length }}</span>
-                <span class="text-cyan-400 material-symbols-outlined text-sm mb-1">radar</span>
-            </div>
-        </div>
-        <div class="glass-panel ghost-border rounded-lg p-4 flex flex-col justify-between border-t border-secondary/20 border-r-0 border-b-0 border-l-0">
-            <span class="text-[10px] uppercase tracking-widest text-outline font-label">Critical Alerts</span>
-            <div class="flex items-end gap-2 mt-2">
-                <span class="text-3xl font-headline font-bold text-secondary">{% if notifications %}{{ notifications|length }}{% else %}00{% endif %}</span>
-                {% if notifications %}
-                <span class="text-secondary pulse-ring w-2 h-2 rounded-full mb-3 ml-1 block"></span>
-                {% endif %}
-            </div>
-        </div>
-        <div class="col-span-2 md:col-span-1 glass-panel ghost-border rounded-lg p-4 flex flex-col justify-between" style="{% if percentages %} border-bottom: 2px solid var(--tertiary-fixed-dim) {% endif %}">
-            <span class="text-[10px] uppercase tracking-widest text-outline font-label">Readiness Score</span>
-            <div class="flex items-end gap-2 mt-2">
-                {% if percentages %}
-                <span class="text-3xl font-headline font-bold text-tertiary-fixed">{{ (percentages|sum / percentages|length)|round(1) }}%</span>
-                <div class="h-1 w-full bg-surface-container-high rounded-full mb-3 ml-2 overflow-hidden">
-                    <div class="h-full bg-tertiary-fixed shadow-[0_0_8px_#00fbfb]" style="width: {{ (percentages|sum / percentages|length)|round(1) }}%"></div>
-                </div>
-                {% else %}
-                <span class="text-2xl font-headline font-bold text-outline uppercase">N/A</span>
-                {% endif %}
-            </div>
-        </div>
-    </section>
-
-    <!-- AI Recommendation Banner -->
-    <section class="relative overflow-hidden rounded-xl bg-surface-container border border-cyan-500/10 p-5 group">
-        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">bolt</span>
-        </div>
-        <div class="relative z-10 flex flex-col gap-3">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary text-lg">psychology</span>
-                <span class="font-headline font-bold text-xs tracking-widest uppercase text-on-surface">Tactical Intel Suggestion</span>
-            </div>
-            {% if recommendation %}
-            <h2 class="text-lg font-headline font-bold text-primary leading-tight m-0">Focus Protocol: {{ recommendation }} Required</h2>
-            <p class="text-sm text-on-surface-variant leading-relaxed max-w-md m-0">Our analytics engine detected a vulnerability in your preparedness metrics for this threat vector.</p>
-            <a href="/simulation/{{ recommendation }}" class="inline-block mt-2 w-max px-6 py-2 molten-gradient rounded-lg text-on-secondary-fixed font-headline font-bold text-xs uppercase tracking-widest shadow-[0_4px_15px_rgba(250,92,28,0.3)] active:scale-95 transition-transform" style="text-decoration:none;">
-                Initiate Target Ops
-            </a>
-            {% else %}
-            <h2 class="text-lg font-headline font-bold text-primary leading-tight m-0">Awaiting Field Data</h2>
-            <p class="text-sm text-on-surface-variant leading-relaxed max-w-md m-0">Complete more simulations in the Explorer modules to receive personalized operational recommendations.</p>
-            {% endif %}
-        </div>
-    </section>
-
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Communication Logs -->
-        <div class="glass-panel ghost-border rounded-xl p-5 space-y-4">
-            <div class="flex items-center justify-between">
-                <h4 class="font-headline font-bold text-xs tracking-widest uppercase text-tertiary-fixed m-0">HQ Transmissions</h4>
-                <span class="material-symbols-outlined text-sm text-outline">more_horiz</span>
-            </div>
-            <div class="space-y-4 max-h-[300px] overflow-auto pt-2">
-                {% if notifications %}
-                    {% for n in notifications %}
-                    <div class="flex gap-3 items-start border-l border-secondary/20 pl-4 relative">
-                        <div class="absolute -left-[4.5px] top-1 w-2 h-2 rounded-full pulse-ring bg-secondary"></div>
-                        <div class="flex-1">
-                            <p class="text-xs font-mono text-secondary m-0">ALERT</p>
-                            <p class="text-sm text-on-surface leading-tight mt-1 mb-0">{{ n[2] }}</p>
-                            <a href="/delete-notification/{{ n[0] }}" class="text-[10px] text-outline mt-2 inline-block uppercase tracking-wider hover:text-white" style="text-decoration:none;">Dismiss</a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-4 text-outline text-sm">No new transmissions.</div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Regional Map UI (Visual) -->
-        <div class="bg-surface-container rounded-xl p-1 overflow-hidden flex flex-col relative h-[300px]">
-            <img class="w-full h-full object-cover opacity-60 absolute inset-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7sh39hBUTsLdTkOJx0qx7DlDBWCbw0NHbjsRacUCrvyVTa_HF-r-gSyB1WMNP5LoBUKscCay7gNDlSTov9QzG6kAVNdpxdKvagCHTYsv5H_z7p5om5dk_JsSPKFivISn9ZHKd0n3ENl6HzvUS-HmvilaVSA21_Vrso0NAkE6DHvGR0xcsVxsHyvkmouZJjMZGqS3sild0jmUns9jlgXF0BSesC6IQSxwTst64XCNnCXp2Gr83Icstg4U66_Dl3o43KKfinyWwjU8" />
-            <div class="absolute top-2 left-2 right-2 flex justify-between glass-panel p-2 rounded text-[10px] font-mono text-cyan-400 z-10">
-                <span>COORD: 20.5937° N, 78.9629° E</span>
-                <span class="text-secondary pulse-ring w-2 h-2 rounded-full"></span>
-            </div>
-            <div class="absolute bottom-2 left-2 right-2 glass-panel p-3 rounded-lg border border-cyan-500/10 z-10">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-headline font-bold uppercase text-cyan-400">Threat Monitoring Status</span>
-                </div>
-                <!-- Dynamic progress simulation -->
-                <div class="h-1 w-full bg-surface-container-high rounded-full overflow-hidden mb-1">
-                    <div class="h-full bg-cyan-500 w-[70%]"></div>
-                </div>
-                <div class="h-1 w-full bg-surface-container-high rounded-full overflow-hidden">
-                    <div class="h-full bg-secondary w-[40%]"></div>
-                </div>
-            </div>
-            <a href="/india" class="absolute inset-0 z-20"></a>
-        </div>
-    </section>
-</main>
-</body>
-</html>
+{% endif %}
+{% endblock %}

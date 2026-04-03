@@ -1,0 +1,57 @@
+﻿{% extends 'base.html' %}
+{% block title %}Disaster Library — DisasterGuard{% endblock %}
+{% block content %}
+<div class="mini-hero">
+    <h1>📚 Disaster Library</h1>
+    <p>Comprehensive guides on every major disaster type — know the risks, be prepared.</p>
+</div>
+
+<div class="flex items-center justify-between mb-3" style="flex-wrap:wrap;gap:1rem;">
+    <p>{{ disasters|length }} disaster types available</p>
+    <input type="text" id="search-disasters" class="form-control" placeholder="🔍 Search disasters..." style="max-width:280px;">
+</div>
+
+{% set icons = {
+    'Earthquake': '🌍', 'Flood': '🌊', 'Cyclone': '🌀', 'Tsunami': '🌊',
+    'Landslide': '⛰️', 'Drought': '☀️', 'Fire': '🔥', 'Wildfire': '🌲',
+    'Tornado': '🌪️', 'Heatwave': '��️'
+} %}
+{% set continent_colors = {
+    'Asia': 'badge-primary', 'Africa': 'badge-warning',
+    'Europe': 'badge-success', 'North America': 'badge-medium',
+    'Australia': 'badge-high', 'South America': 'badge-low'
+} %}
+
+<div class="auto-grid-md" id="disaster-grid">
+{% for d in disasters %}
+<div class="card disaster-item" style="cursor:pointer;" data-name="{{ d[0]|lower }}">
+    <div class="flex items-center gap-2 mb-2">
+        <span style="font-size:2rem;">{{ icons.get(d[0], '⚡') }}</span>
+        <div>
+            <h3 style="margin:0;">{{ d[0] }}</h3>
+            <div class="flex gap-1 mt-1">
+                <span class="badge {{ continent_colors.get(d[2], 'badge-muted') }}">{{ d[2] }}</span>
+                {% if d[3] %}<span class="badge badge-muted">{{ d[3] }}</span>{% endif %}
+            </div>
+        </div>
+    </div>
+    <p style="font-size:.875rem;margin-bottom:1rem;">{{ d[1][:100] if d[1] else 'Comprehensive guide available.' }}...</p>
+    <div class="flex gap-2" style="flex-wrap:wrap;">
+        <a href="/simulation/{{ d[0] }}" class="btn btn-outline btn-sm" id="lib-details-{{ d[0]|lower|replace(' ','-') }}-btn">📋 Details</a>
+        <a href="/disaster/{{ d[0] }}/guide" class="btn btn-primary btn-sm" id="lib-guide-{{ d[0]|lower|replace(' ','-') }}-btn">📖 Full Guide</a>
+        <a href="/simulation/{{ d[0] }}/exercises" class="btn btn-success btn-sm" id="lib-quiz-{{ d[0]|lower|replace(' ','-') }}-btn">🎯 Quiz</a>
+    </div>
+</div>
+{% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('search-disasters').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.disaster-item').forEach(item => {
+        item.style.display = item.dataset.name.includes(q) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

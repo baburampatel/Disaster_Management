@@ -1,0 +1,98 @@
+﻿{% extends 'base.html' %}
+{% block title %}Report Incident — DisasterGuard{% endblock %}
+{% block content %}
+<div class="mini-hero" style="background:linear-gradient(135deg,#bf360c,#e64a19);">
+    <h1>⚠️ Report an Incident</h1>
+    <p style="color:rgba(255,255,255,.85);">Report a disaster, emergency, or hazardous situation in your area. Authorities will be notified.</p>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h2 class="card-title">📋 Incident Report Form</h2>
+        <form action="/report-incident" method="POST" id="incident-form">
+            <div class="form-group">
+                <label class="form-label" for="incident_type">Incident Type *</label>
+                <select name="incident_type" id="incident_type" class="form-control" required>
+                    <option value="">-- Select Type --</option>
+                    <option value="Earthquake">🌍 Earthquake</option>
+                    <option value="Flood">🌊 Flood</option>
+                    <option value="Cyclone">🌀 Cyclone</option>
+                    <option value="Tsunami">🌊 Tsunami</option>
+                    <option value="Landslide">⛰️ Landslide</option>
+                    <option value="Fire">🔥 Fire</option>
+                    <option value="Wildfire">🌲 Wildfire</option>
+                    <option value="Drought">☀️ Drought</option>
+                    <option value="Heatwave">🌡️ Heatwave</option>
+                    <option value="Chemical Spill">☣️ Chemical Spill</option>
+                    <option value="Building Collapse">🏚️ Building Collapse</option>
+                    <option value="Road Accident">🚗 Road Accident</option>
+                    <option value="Other">⚡ Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="location">Location *</label>
+                <input type="text" name="location" id="location" class="form-control"
+                       placeholder="Village/Area, District, State" required maxlength="200">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="severity">Severity Level *</label>
+                <select name="severity" id="severity" class="form-control" required>
+                    <option value="">-- Select Severity --</option>
+                    <option value="critical">🔴 Critical — Immediate threat to life</option>
+                    <option value="high">🟠 High — Significant damage / injuries</option>
+                    <option value="medium">🟡 Medium — Moderate impact, escalating</option>
+                    <option value="low">🟢 Low — Minor impact, monitoring needed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="description">Description *</label>
+                <textarea name="description" id="description" class="form-control"
+                          rows="4" placeholder="Describe what happened, approximate number of people affected, visible damage, any injuries..." required minlength="20"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="contact_number">Your Contact Number (optional)</label>
+                <input type="tel" name="contact_number" id="contact_number" class="form-control"
+                       placeholder="+91 XXXXXXXXXX">
+            </div>
+            <button type="submit" class="btn btn-danger w-full" id="submit-incident-btn">
+                ⚠️ Submit Incident Report
+            </button>
+        </form>
+    </div>
+
+    <div>
+        <div class="card mb-3" style="border-left:4px solid var(--danger);">
+            <h3 class="card-title" style="color:var(--danger);">🚨 In Life-Threatening Situations</h3>
+            <p>If people are in immediate danger, call emergency services FIRST:</p>
+            <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.75rem;">
+                <div class="flex items-center gap-2">
+                    <span style="font-size:1.5rem;">🚨</span>
+                    <div><div style="font-size:.8rem;color:var(--text-muted);">National Emergency</div>
+                    <a href="tel:112" style="font-size:1.5rem;font-weight:800;color:var(--danger);">112</a></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span style="font-size:1.5rem;">🚑</span>
+                    <div><div style="font-size:.8rem;color:var(--text-muted);">Ambulance</div>
+                    <a href="tel:102" style="font-size:1.5rem;font-weight:800;color:var(--danger);">102</a></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span style="font-size:1.5rem;">🌊</span>
+                    <div><div style="font-size:.8rem;color:var(--text-muted);">NDMA Disaster Helpline</div>
+                    <a href="tel:1078" style="font-size:1.5rem;font-weight:800;color:var(--primary-dark);">1078</a></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h3 class="card-title">📝 Reporting Guidelines</h3>
+            <ul class="info-list">
+                <li>Ensure your personal safety before reporting</li>
+                <li>Provide as accurate a location as possible (village, landmark, GPS if available)</li>
+                <li>Estimate the number of people affected</li>
+                <li>Describe visible damage and injuries</li>
+                <li>Mention any ongoing hazards (fire, rising water, structural damage)</li>
+                <li>Your report will be reviewed by administrators and forwarded to relevant authorities</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

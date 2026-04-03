@@ -1,0 +1,94 @@
+﻿{% extends 'base.html' %}
+{% block title %}Preparedness Checklist — DisasterGuard{% endblock %}
+{% block content %}
+<div class="mini-hero" style="background:linear-gradient(135deg,#1b5e20,#2e7d32);">
+    <h1>✅ Emergency Preparedness Checklist</h1>
+    <p style="color:rgba(255,255,255,.85);">Check your readiness across all essential categories. Progress is saved in your browser.</p>
+</div>
+
+<div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:1rem;">
+    <div>
+        <span id="progress-text" style="font-weight:600;color:var(--success);">Loading...</span>
+    </div>
+    <button onclick="resetChecklist()" class="btn btn-ghost btn-sm" id="reset-checklist-btn">Reset Checklist</button>
+</div>
+
+<div class="progress-bar-track mb-4" style="height:12px;">
+    <div class="progress-bar-fill fill-success" id="overall-bar" style="width:0%;transition:width .4s;"></div>
+</div>
+
+{% if checklist %}
+{% for category, items in checklist.items() %}
+<div class="checklist-category">
+    <h3>
+        {% if 'Water' in category %}💧
+        {% elif 'Food' in category %}🍱
+        {% elif 'First' in category %}🩺
+        {% elif 'Document' in category %}📄
+        {% elif 'Communic' in category %}📡
+        {% elif 'Safety' in category %}⛑️
+        {% elif 'Sanit' in category %}🧼
+        {% else %}📦{% endif %}
+        {{ category }}
+        <span class="badge badge-muted" style="float:right;" id="cat-count-{{ loop.index }}">0/{{ items|length }}</span>
+    </h3>
+    {% for item in items %}
+    <div class="checklist-item" id="item-wrapper-{{ item['id'] }}">
+        <input type="checkbox" id="chk-{{ item['id'] }}" class="checklist-cb" data-cat="{{ loop.index0 + 1 }}" data-total="{{ items|length }}">
+        <label for="chk-{{ item['id'] }}">
+            <strong>{{ item['item'] }}</strong>
+            <span>{{ item['description'] }}</span>
+        </label>
+        <span class="badge {% if item['priority'] == 'essential' %}badge-danger{% elif item['priority'] == 'important' %}badge-medium{% else %}badge-muted{% endif %}" style="flex-shrink:0;font-size:.7rem;">
+            {{ item['priority']|upper }}
+        </span>
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="card mt-4" style="background:var(--primary-bg);border-color:var(--primary-light);">
+    <h3 class="card-title" style="color:var(--primary-dark);">🎒 Next Steps</h3>
+    <p>Once your checklist is complete, take these additional steps:</p>
+    <ul class="info-list mt-2">
+        <li>Discuss the emergency plan with all family members including children</li>
+        <li>Identify evacuation routes from your home and neighbourhood</li>
+        <li>Agree on a meeting point if family members are separated</li>
+        <li>Practice emergency drills at least once a year</li>
+        <li>Keep your emergency kit in an accessible location known to all</li>
+        <li>Review and refresh your kit every 6 months</li>
+    </ul>
+    <a href="/training" class="btn btn-primary btn-sm mt-3" id="checklist-training-btn">🎯 Continue with Training Exercises</a>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const totalItems = document.querySelectorAll('.checklist-cb').length;
+function updateProgress() {
+    const checked = document.querySelectorAll('.checklist-cb:checked').length;
+    const pct = totalItems > 0 ? Math.round(checked/totalItems*100) : 0;
+    document.getElementById('overall-bar').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = checked + ' of ' + totalItems + ' items completed (' + pct + '%)';
+}
+document.querySelectorAll('.checklist-cb').forEach(cb => {
+    const key = 'chk2_' + cb.id;
+    if (localStorage.getItem(key)==='1') { cb.checked=true; cb.closest('.checklist-item').classList.add('done'); }
+    cb.addEventListener('change', function() {
+        localStorage.setItem(key, this.checked?'1':'0');
+        this.closest('.checklist-item').classList.toggle('done', this.checked);
+        updateProgress();
+    });
+});
+function resetChecklist() {
+    if (!confirm('Reset all checklist progress?')) return;
+    document.querySelectorAll('.checklist-cb').forEach(cb => {
+        localStorage.removeItem('chk2_' + cb.id);
+        cb.checked = false;
+        cb.closest('.checklist-item').classList.remove('done');
+    });
+    updateProgress();
+}
+updateProgress();
+</script>
+{% endblock %}

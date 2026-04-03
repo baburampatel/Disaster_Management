@@ -1,18 +1,39 @@
-{% extends "base.html" %}
-{% block title %}Feedback - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}Submit Feedback — DisasterGuard{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2>Transmit Feedback to HQ</h2>
-    <a href="/user" class="btn btn-outline btn-sm">⬅ Dashboard</a>
+<div class="mini-hero" style="padding:2rem;">
+    <h1>💬 Send Feedback</h1>
+    <p style="color:rgba(255,255,255,.85);">Help us improve DisasterGuard. Your feedback reaches the admin team directly.</p>
 </div>
-
-<div class="card auth-card mt-4 p-4">
-    <form method="post">
-        <div class="form-group">
-            <label class="form-label">Message Log</label>
-            <textarea name="message" rows="6" placeholder="Report issues, request features, or provide operational feedback..." required></textarea>
+<div class="grid-2">
+    <div class="card">
+        <h2 class="card-title">✍️ Your Feedback</h2>
+        <form action="/feedback-page" method="POST" id="feedback-form">
+            <div class="form-group">
+                <label class="form-label" for="message">Message</label>
+                <textarea name="message" id="message" class="form-control" rows="6"
+                          placeholder="Share your experience, suggestions, bug reports, or questions..." required minlength="10"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" id="feedback-submit-btn">📤 Send Feedback</button>
+        </form>
+    </div>
+    <div>
+        <div class="card mb-3" style="border-left:4px solid var(--primary-light);">
+            <h3 class="card-title">💡 What to share?</h3>
+            <ul class="info-list">
+                <li>Suggestions for new features</li>
+                <li>Bug reports or broken pages</li>
+                <li>Incorrect information in disaster guides</li>
+                <li>Missing content for your region</li>
+                <li>Overall experience rating</li>
+                <li>Training exercise difficulty feedback</li>
+            </ul>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%">Transmit Feedback</button>
-    </form>
+        <div class="card">
+            <h3 class="card-title">⏱️ Response Time</h3>
+            <p>The admin team typically responds within 24–48 hours. You'll receive a notification in your dashboard when replied.</p>
+            <a href="/user" class="btn btn-outline btn-sm mt-2" id="feedback-dashboard-btn">← Back to Dashboard</a>
+        </div>
+    </div>
 </div>
 {% endblock %}

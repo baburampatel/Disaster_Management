@@ -1,0 +1,110 @@
+﻿{% extends 'base.html' %}
+{% block title %}DisasterGuard — Your Disaster Preparedness Platform{% endblock %}
+{% block content %}
+
+<div class="hero">
+    <h1>🛡️ Be Ready. Stay Safe. Save Lives.</h1>
+    <p>DisasterGuard is India's smart disaster management platform — combining real-time alerts, expert guides, simulations, and community coordination to keep you prepared.</p>
+    <div class="hero-actions">
+        {% if session.get('user_id') %}
+            <a href="/user" class="btn btn-primary btn-lg" id="hero-dashboard-btn">Go to Dashboard</a>
+            <a href="/disaster-library" class="btn btn-outline btn-lg" style="border-color:#fff;color:#fff;" id="hero-library-btn">Explore Library</a>
+        {% else %}
+            <a href="/register" class="btn btn-primary btn-lg" id="hero-register-btn">Create Free Account</a>
+            <a href="/" class="btn btn-outline btn-lg" style="border-color:#fff;color:#fff;" id="hero-login-btn">Login</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="grid-3 mb-4">
+    <div class="stat-card text-center">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">{{ user_count or "500" }}+</div>
+        <div class="stat-label">Registered Members</div>
+    </div>
+    <div class="stat-card text-center">
+        <div class="stat-icon">📚</div>
+        <div class="stat-value">{{ disaster_count or "10" }}</div>
+        <div class="stat-label">Disaster Types Covered</div>
+    </div>
+    <div class="stat-card text-center">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value">{{ incident_count or "0" }}+</div>
+        <div class="stat-label">Incidents Reported</div>
+    </div>
+</div>
+
+<!-- Active Alerts Preview -->
+{% if recent_alerts %}
+<div class="card mb-4">
+    <div class="flex items-center justify-between mb-3">
+        <h2 class="card-title" style="margin:0;">🚨 Latest Active Alerts</h2>
+        <a href="/alerts" class="btn btn-outline btn-sm" id="view-all-alerts-btn">View All Alerts</a>
+    </div>
+    {% for alert in recent_alerts %}
+    {% set sev = alert['severity'] if alert['severity'] else 'medium' %}
+    <div class="alert-banner alert-{{ sev }}">
+        <div class="alert-icon">{{ '🔴' if sev=='critical' else '🟠' if sev=='high' else '🟡' if sev=='medium' else '🟢' }}</div>
+        <div class="alert-body">
+            <h4>{{ alert['title'] }}</h4>
+            <p>{{ alert['message'][:120] }}...</p>
+            <span class="alert-meta">📍 {{ alert['location'] }} &nbsp;|&nbsp; {{ alert['created_at'][:10] }}</span>
+        </div>
+        <span class="badge badge-{{ sev }}" style="flex-shrink:0;">{{ sev.upper() }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Features -->
+<h2 class="mb-3" style="text-align:center;">Everything You Need to Stay Safe</h2>
+<div class="auto-grid-md mb-4">
+    <div class="card">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">📚</div>
+        <h3>Disaster Library</h3>
+        <p>Comprehensive guides on 10+ disaster types — causes, dos &amp; don'ts, safety kits, myths vs facts, and region-specific tips.</p>
+        <a href="{% if session.get('user_id') %}/disaster-library{% else %}/register{% endif %}" class="btn btn-primary btn-sm mt-2" id="feature-library-btn">Explore Now</a>
+    </div>
+    <div class="card">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">🚨</div>
+        <h3>Real-Time Alerts</h3>
+        <p>Stay updated with live disaster alerts categorized by severity — critical, high, medium, and low — covering your region.</p>
+        <a href="{% if session.get('user_id') %}/alerts{% else %}/register{% endif %}" class="btn btn-primary btn-sm mt-2" id="feature-alerts-btn">View Alerts</a>
+    </div>
+    <div class="card">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">🎯</div>
+        <h3>Training & Simulations</h3>
+        <p>Take interactive quizzes and simulations to test your knowledge. AI recommends personalized learning based on your weak areas.</p>
+        <a href="{% if session.get('user_id') %}/training{% else %}/register{% endif %}" class="btn btn-primary btn-sm mt-2" id="feature-training-btn">Start Training</a>
+    </div>
+    <div class="card">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">📞</div>
+        <h3>Emergency Contacts</h3>
+        <p>Instant access to national and state-level emergency numbers — police, ambulance, NDRF, NDMA, and more.</p>
+        <a href="/emergency-contacts" class="btn btn-primary btn-sm mt-2" id="feature-contacts-btn">View Contacts</a>
+    </div>
+    <div class="card">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">🏠</div>
+        <h3>Find Shelters</h3>
+        <p>Locate nearest emergency shelters with real-time occupancy, capacity info, and direct contact details.</p>
+        <a href="{% if session.get('user_id') %}/shelters{% else %}/register{% endif %}" class="btn btn-primary btn-sm mt-2" id="feature-shelters-btn">Find Shelter</a>
+    </div>
+    <div class="card">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">✅</div>
+        <h3>Preparedness Checklist</h3>
+        <p>Interactive emergency preparedness checklist covering water, food, documents, communication, and safety equipment.</p>
+        <a href="{% if session.get('user_id') %}/preparedness-checklist{% else %}/register{% endif %}" class="btn btn-primary btn-sm mt-2" id="feature-checklist-btn">View Checklist</a>
+    </div>
+</div>
+
+<!-- CTA -->
+{% if not session.get('user_id') %}
+<div class="mini-hero text-center">
+    <h2>Join DisasterGuard Today</h2>
+    <p style="color:rgba(255,255,255,.8);margin-bottom:1.5rem;">Free access to all features. Be prepared before disaster strikes.</p>
+    <a href="/register" class="btn btn-primary btn-lg" id="cta-register-btn" style="background:#fff;color:var(--primary-dark);">Create Free Account</a>
+</div>
+{% endif %}
+
+{% endblock %}

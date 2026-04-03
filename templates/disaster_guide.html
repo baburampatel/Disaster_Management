@@ -1,0 +1,139 @@
+﻿{% extends 'base.html' %}
+{% block title %}{{ disaster }} Complete Guide — DisasterGuard{% endblock %}
+{% block content %}
+<div class="mini-hero">
+    <h1>📖 {{ disaster }} — Complete Preparedness Guide</h1>
+    <p>Everything you need to know: causes, warning signs, safety kit, dos and don'ts, myths vs facts, and regional tips.</p>
+</div>
+
+<div class="flex gap-2 mb-4" style="flex-wrap:wrap;">
+    <a href="/simulation/{{ disaster }}/exercises" class="btn btn-primary" id="guide-quiz-btn">🎯 Take Exercises</a>
+    <a href="/simulation/{{ disaster }}" class="btn btn-outline" id="guide-details-btn">📋 Simulation Details</a>
+    <a href="/disaster-library" class="btn btn-ghost" id="guide-back-btn">← Back to Library</a>
+</div>
+
+<div class="grid-2">
+    <div>
+        {% if details %}
+        <!-- What is it -->
+        <div class="content-panel">
+            <h3 class="section-title">🔍 What is {{ disaster }}?</h3>
+            <p>{{ details[1] }}</p>
+        </div>
+        <!-- Causes -->
+        <div class="content-panel">
+            <h3 class="section-title">⚙️ Common Causes</h3>
+            <ul class="info-list">
+            {% for cause in (details[2] or '').split(',') %}
+                <li>{{ cause.strip() }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        <!-- Impacts -->
+        <div class="content-panel">
+            <h3 class="section-title">💥 Impacts</h3>
+            <ul class="info-list">
+            {% for impact in (details[3] or '').split(',') %}
+                <li>{{ impact.strip() }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        <!-- Dos and Don'ts -->
+        {% if details[5] or details[6] %}
+        <div class="content-panel">
+            <div class="grid-2">
+                <div>
+                    <h3 class="section-title" style="color:var(--success);">✅ Do's</h3>
+                    <ul class="info-list dos-list">
+                    {% for item in (details[5] or '').split('.') %}
+                        {% if item.strip() %}<li>{{ item.strip() }}</li>{% endif %}
+                    {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="section-title" style="color:var(--danger);">❌ Don'ts</h3>
+                    <ul class="info-list donts-list">
+                    {% for item in (details[6] or '').split('.') %}
+                        {% if item.strip() %}<li>{{ item.strip() }}</li>{% endif %}
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+
+    <div>
+        <!-- Warning Signs -->
+        {% if article and article[0] %}
+        <div class="content-panel" style="border-left:4px solid var(--accent);">
+            <h3 class="section-title">⚠️ Early Warning Signs</h3>
+            <ul class="info-list">
+            {% for sign in article[0].split('|') %}
+                {% if sign.strip() %}<li>{{ sign.strip() }}</li>{% endif %}
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Safety Kit -->
+        {% if article and article[1] %}
+        <div class="content-panel" style="border-left:4px solid var(--primary-light);">
+            <h3 class="section-title">🎒 Emergency Safety Kit</h3>
+            <ul class="info-list">
+            {% for item in article[1].split('|') %}
+                {% if item.strip() %}<li>{{ item.strip() }}</li>{% endif %}
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Myths vs Facts -->
+        {% if article and article[2] %}
+        <div class="content-panel" style="border-left:4px solid var(--danger);">
+            <h3 class="section-title">🧠 Myths vs Facts</h3>
+            {% for line in article[2].split('|') %}
+                {% if line.strip() %}
+                <div style="margin-bottom:.75rem;padding:.75rem;background:#f8fafc;border-radius:var(--r-sm);">
+                    <p style="font-size:.875rem;margin:0;">{{ line.strip() }}</p>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Region Tips -->
+        {% if article and article[3] %}
+        <div class="content-panel" style="border-left:4px solid var(--success);">
+            <h3 class="section-title">🗺️ Region-Specific Tips (India)</h3>
+            {% for tip in article[3].split('|') %}
+                {% if tip.strip() %}
+                <div style="margin-bottom:.75rem;padding:.75rem;background:var(--sev-low-bg);border-radius:var(--r-sm);">
+                    <p style="font-size:.875rem;margin:0;color:var(--text-main);">{{ tip.strip() }}</p>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Emergency Contacts -->
+        {% if contacts %}
+        <div class="content-panel">
+            <h3 class="section-title">📞 Key Emergency Contacts</h3>
+            {% for c in contacts %}
+            <div class="contact-card mb-2">
+                <div class="contact-icon" style="background:var(--primary-bg);color:var(--primary-dark);">📞</div>
+                <div style="flex:1;">
+                    <strong style="font-size:.9rem;">{{ c[0] }}</strong>
+                    <div><a href="tel:{{ c[1] }}" style="font-size:1.1rem;font-weight:700;color:var(--primary-dark);">{{ c[1] }}</a></div>
+                </div>
+                <span class="badge badge-primary">{{ c[2] }}</span>
+            </div>
+            {% endfor %}
+            <a href="/emergency-contacts" class="btn btn-outline btn-sm mt-2" id="guide-all-contacts-btn">View All Contacts</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,24 +1,23 @@
-{% extends "base.html" %}
-{% block title %}Disasters in {{ continent }} - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}{{ continent }} Disasters — DisasterGuard{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2>Disaster Scenarios: {{ continent }}</h2>
-    <a href="/continents" class="btn btn-outline btn-sm">⬅ Regions</a>
-</div>
-
+<div class="mini-hero"><h1>🌍 {{ continent }} — Disaster Types</h1><p style="color:rgba(255,255,255,.85);">Disasters most prevalent in {{ continent }}.</p></div>
+<a href="/continents" class="btn btn-ghost btn-sm mb-3" id="cont-back-btn">← Back to Continents</a>
+{% set icons = {'Earthquake':'🌍','Flood':'🌊','Cyclone':'🌀','Tsunami':'🌊','Landslide':'⛰️','Drought':'☀️','Fire':'🔥','Wildfire':'🌲','Tornado':'🌪️','Heatwave':'🌡️'} %}
 {% if disasters %}
 <div class="discover-grid">
-    {% for d in disasters %}
-    <a href="/simulation/{{ d[0] }}" class="discover-card">
-        <div class="icon">🚨</div>
-        <h3>{{ d[0] }}</h3>
-        <p class="text-muted mt-2" style="font-size:0.875rem">View scenario details</p>
-    </a>
-    {% endfor %}
+{% for d in disasters %}
+<a href="/simulation/{{ d[0] }}" class="discover-card" id="cont-disaster-{{ d[0]|lower|replace(' ','-') }}-btn">
+    <div class="icon">{{ icons.get(d[0],'⚡') }}</div>
+    <h3>{{ d[0] }}</h3>
+    <p>View details</p>
+</a>
+{% endfor %}
 </div>
 {% else %}
-<div class="card text-center py-4">
-    <p class="text-muted mb-0">No simulated threat data available for this continent.</p>
+<div class="card text-center" style="padding:3rem;">
+    <p>No disasters listed for {{ continent }} yet.</p>
+    <a href="/continents" class="btn btn-outline mt-2" id="cont-back2-btn">← Continents</a>
 </div>
 {% endif %}
 {% endblock %}

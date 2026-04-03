@@ -1,0 +1,135 @@
+﻿{% extends 'base.html' %}
+{% block title %}Analytics — Admin — DisasterGuard{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:1rem;">
+    <div>
+        <h1 style="margin-bottom:.25rem;">📈 Platform Analytics</h1>
+        <p style="margin:0;">Detailed performance trends and user activity insights</p>
+    </div>
+    <a href="/admin" class="btn btn-ghost btn-sm" id="analytics-back-btn">← Back to Dashboard</a>
+</div>
+
+<!-- Summary Stats -->
+<div class="grid-3 mb-4">
+    <div class="stat-card" style="border-top:3px solid var(--primary-light);">
+        <div class="stat-label">Total Quiz Attempts</div>
+        <div class="stat-value">{{ recent_activity|length }}</div>
+        <div class="stat-sub">last 15 sessions shown</div>
+    </div>
+    <div class="stat-card" style="border-top:3px solid var(--success);">
+        <div class="stat-label">Avg Platform Score</div>
+        {% set scores_with_data = disaster_stats|selectattr('2', 'gt', 0)|list %}
+        {% if scores_with_data %}
+        <div class="stat-value" style="color:var(--success);">
+            {{ (disaster_stats|map(attribute=1)|sum / disaster_stats|length)|round(1) }}%
+        </div>
+        {% else %}
+        <div class="stat-value" style="color:var(--text-muted);">N/A</div>
+        {% endif %}
+        <div class="stat-sub">across all disaster types</div>
+    </div>
+    <div class="stat-card" style="border-top:3px solid var(--accent);">
+        <div class="stat-label">Weakest Area</div>
+        {% set weakest = disaster_stats|sort(attribute=1)|first %}
+        <div class="stat-value" style="font-size:1.2rem;color:var(--accent);">{{ weakest[0] if weakest else '—' }}</div>
+        <div class="stat-sub">{{ weakest[1] if weakest else 0 }}% avg score</div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid-2 mb-4">
+    <div class="card">
+        <h3 class="card-title">📊 Average Score by Disaster Type</h3>
+        <canvas id="disasterChart" height="270"></canvas>
+    </div>
+    <div class="card">
+        <h3 class="card-title">📅 Quiz Activity (Last 7 Days)</h3>
+        {% if daily_activity %}
+        <canvas id="dailyChart" height="270"></canvas>
+        {% else %}
+        <div class="text-center" style="padding:4rem 0;color:var(--text-muted);">
+            <div style="font-size:2.5rem;margin-bottom:1rem;">📅</div>
+            <p>No quiz activity in the last 7 days.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Per-disaster Breakdown -->
+<div class="card mb-4">
+    <h3 class="card-title">🏆 Disaster-wise Performance Breakdown</h3>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th>Disaster Type</th><th>Avg Score</th><th>Participants</th><th>Status</th><th>Performance Bar</th></tr></thead>
+            <tbody>
+            {% for stat in disaster_stats|sort(attribute=1, reverse=True) %}
+            <tr>
+                <td><strong>{{ stat[0] }}</strong></td>
+                <td style="font-size:1.1rem;font-weight:700;color:{% if stat[1] >= 70 %}var(--success){% elif stat[1] >= 40 %}var(--accent){% else %}var(--danger){% endif %};">{{ stat[1] }}%</td>
+                <td>{{ stat[2] }} user{{ 's' if stat[2] != 1 else '' }}</td>
+                <td>
+                    <span class="badge {% if stat[1] >= 70 %}badge-success{% elif stat[1] >= 40 %}badge-medium{% else %}badge-critical{% endif %}">
+                        {{ 'Good' if stat[1] >= 70 else 'Needs Work' if stat[1] >= 40 else 'Critical' }}
+                    </span>
+                </td>
+                <td style="min-width:150px;">
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill {% if stat[1] >= 70 %}fill-success{% elif stat[1] >= 40 %}fill-warning{% else %}fill-danger{% endif %}" style="width:{{ stat[1] }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="card">
+    <h3 class="card-title">🕐 Recent Exercise Attempts</h3>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th>User</th><th>Disaster</th><th>Exercise</th><th>Score</th><th>Percentage</th><th>Time</th></tr></thead>
+            <tbody>
+            {% for a in recent_activity %}
+            {% set pct = (a[3]/a[4]*100)|round|int if a[4] > 0 else 0 %}
+            <tr>
+                <td><strong>{{ a[0] }}</strong></td>
+                <td>{{ a[1] }}</td>
+                <td style="text-align:center;">{{ a[2] }}</td>
+                <td style="text-align:center;font-weight:700;">{{ a[3] }}/{{ a[4] }}</td>
+                <td>
+                    <span class="badge {% if pct >= 80 %}badge-success{% elif pct >= 50 %}badge-medium{% else %}badge-danger{% endif %}">{{ pct }}%</span>
+                </td>
+                <td style="font-size:.75rem;color:var(--text-muted);">{{ a[5][:16] if a[5] else '—' }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const labels = {{ disaster_stats|map(attribute=0)|list|tojson }};
+const scores = {{ disaster_stats|map(attribute=1)|list|tojson }};
+const colors = scores.map(v => v >= 70 ? 'rgba(46,125,50,.8)' : v >= 40 ? 'rgba(245,124,0,.8)' : 'rgba(198,40,40,.8)');
+new Chart(document.getElementById('disasterChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels, datasets: [{ label:'Avg Score %', data: scores, backgroundColor: colors, borderRadius: 6 }] },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}},x:{ticks:{maxRotation:45}}} }
+});
+{% if daily_activity %}
+const dLabels = {{ daily_activity|map(attribute=0)|list|tojson }};
+const dCounts = {{ daily_activity|map(attribute=1)|list|tojson }};
+new Chart(document.getElementById('dailyChart').getContext('2d'), {
+    type: 'line',
+    data: { labels: dLabels, datasets: [{ label:'Quiz Attempts', data: dCounts, borderColor:'var(--primary-light)', backgroundColor:'rgba(25,118,210,.1)', fill:true, tension:.4, pointRadius:5 }] },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1}}} }
+});
+{% endif %}
+</script>
+{% endblock %}

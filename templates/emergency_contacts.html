@@ -1,0 +1,50 @@
+﻿{% extends 'base.html' %}
+{% block title %}Emergency Contacts — DisasterGuard{% endblock %}
+{% block content %}
+<div class="mini-hero" style="background:linear-gradient(135deg,#1b5e20,#388e3c);">
+    <h1>📞 Emergency Contacts</h1>
+    <p style="color:rgba(255,255,255,.85);">All critical emergency numbers for India — national, state, and category-wise. Save these now.</p>
+</div>
+
+{% set cat_icons = {
+    'national':'🇮🇳','disaster':'🌊','police':'🚔','medical':'🚑',
+    'fire':'🔥','safety':'🛡️','unknown':'📞'
+} %}
+{% set cat_colors = {
+    'national':'var(--primary-light)','disaster':'var(--danger)','police':'#1565c0',
+    'medical':'#d32f2f','fire':'#e64a19','safety':'#2e7d32'
+} %}
+
+<!-- Group contacts by category -->
+{% set categories = [] %}
+{% for c in contacts %}{% if c['category'] not in categories %}{% set _ = categories.append(c['category']) %}{% endif %}{% endfor %}
+
+{% for cat in categories %}
+<div class="card mb-3">
+    <h3 class="card-title" style="color:{{ cat_colors.get(cat,'var(--text-main)') }};">
+        {{ cat_icons.get(cat,'📞') }} {{ cat|title }} Emergency Numbers
+    </h3>
+    <div class="auto-grid-sm">
+    {% for c in contacts if c['category'] == cat %}
+        <div class="contact-card">
+            <div class="contact-icon" style="background:{{ cat_colors.get(cat,'var(--primary-bg)') }}20;color:{{ cat_colors.get(cat,'var(--primary-dark)') }};">
+                {{ cat_icons.get(cat,'📞') }}
+            </div>
+            <div style="flex:1;min-width:0;">
+                <strong style="font-size:.9rem;display:block;">{{ c['name'] }}</strong>
+                <a href="tel:{{ c['number'] }}" style="font-size:1.3rem;font-weight:800;color:{{ cat_colors.get(cat,'var(--primary-dark)') }};">{{ c['number'] }}</a>
+                <p style="font-size:.8rem;margin:.15rem 0 0;color:var(--text-muted);">{{ c['description'] or '' }}</p>
+            </div>
+            <span class="badge badge-muted" style="flex-shrink:0;font-size:.65rem;">{{ c['region'] or 'All India' }}</span>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+<div class="card" style="background:var(--danger-bg);border-color:var(--danger);border-left:5px solid var(--danger);">
+    <h3 class="card-title" style="color:var(--danger);">⚠️ Important Reminder</h3>
+    <p>Save these numbers on your phone <strong>before</strong> a disaster strikes. Phone networks may be overloaded during emergencies — pre-saved contacts save precious seconds.</p>
+    <p class="mt-1">Consider writing key numbers on a physical card kept in your emergency kit.</p>
+</div>
+{% endblock %}

@@ -1,42 +1,39 @@
-{% extends "base.html" %}
-{% block title %}Result - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}Exercise Result — DisasterGuard{% endblock %}
 {% block content %}
-<div class="card mb-4 text-center">
-    <h2>Operation Result: {{ disaster }}</h2>
-    <div class="mt-3 mb-2">
-        <span style="font-size: 3rem; font-weight: 800; color: var(--primary-light)">{{ score }}</span> 
-        <span class="text-muted" style="font-size: 2rem;">/ {{ total }}</span>
-    </div>
-    <p class="text-muted">
-        {% if score == total %}Flawless Execution!
-        {% elif score >= (total/2) %}Satisfactory Performance.
-        {% else %}Requires Immediate Remediation.
-        {% endif %}
-    </p>
-    <a href="/user" class="btn btn-primary mt-3">Return to Command Center</a>
+{% set percentage = ((score/total)*100)|round|int if total > 0 else 0 %}
+<div class="mini-hero" style="background:linear-gradient(135deg,{% if percentage >= 80 %}var(--success),#4caf50{% elif percentage >= 50 %}var(--accent),#fb8c00{% else %}var(--danger),#ef5350{% endif %});">
+    <div style="font-size:3rem;margin-bottom:1rem;">{{ '🏆' if percentage >= 80 else '👍' if percentage >= 50 else '📚' }}</div>
+    <h1>{{ 'Excellent!' if percentage >= 80 else 'Good Effort!' if percentage >= 50 else 'Keep Practicing!' }}</h1>
+    <p style="color:rgba(255,255,255,.85);">{{ disaster }} Exercise — Final Result</p>
+    <div style="font-size:3.5rem;font-weight:900;color:#fff;margin:.5rem 0;">{{ score }}/{{ total }}</div>
+    <p style="color:rgba(255,255,255,.85);">{{ percentage }}% Score</p>
 </div>
 
-<h3 class="mb-3 mt-4">Post-Action Review</h3>
-<div class="card p-0" style="overflow: hidden">
-    <div class="table-wrapper m-0" style="border: none; border-radius:0;">
-        <table>
-        {% for r in review %}
-            <tr class="{% if r.status == 'correct' %}bg-success-light{% else %}bg-danger-light{% endif %}">
-                <td style="width: 50px; font-weight: bold;">Q{{ loop.index }}</td>
-                <td>
-                    <p class="mb-1" style="font-weight: 500;">{{ r.question }}</p>
-                    <div class="flex gap-2">
-                        <span class="badge {% if r.status == 'correct' %}badge-success{% else %}badge-danger{% endif %}">
-                            Agent: {{ r.user_answer }}
-                        </span>
-                        {% if r.status == "wrong" %}
-                            <span class="badge badge-success">Correct: {{ r.correct_answer }}</span>
-                        {% endif %}
-                    </div>
-                </td>
-            </tr>
-        {% endfor %}
-        </table>
-    </div>
+<div class="flex gap-2 mb-4 justify-center" style="flex-wrap:wrap;">
+    <a href="/simulation/{{ disaster }}/exercises" class="btn btn-primary" id="result-retry-btn">🔄 Try Again</a>
+    <a href="/disaster/{{ disaster }}/guide" class="btn btn-outline" id="result-guide-btn">📖 Study Guide</a>
+    <a href="/training" class="btn btn-outline" id="result-training-btn">🎯 More Training</a>
+    <a href="/user" class="btn btn-ghost" id="result-dashboard-btn">← Dashboard</a>
 </div>
+
+<h2 class="mb-3">📝 Question Review</h2>
+{% for r in review %}
+<div class="result-card {{ r.status }}">
+    <div class="flex items-center gap-2 mb-2">
+        {% if r.status == 'correct' %}
+        <span style="font-size:1.25rem;">✅</span>
+        <span class="correct-text">Correct!</span>
+        {% else %}
+        <span style="font-size:1.25rem;">❌</span>
+        <span class="wrong-text">Incorrect</span>
+        {% endif %}
+    </div>
+    <p style="font-weight:600;color:var(--text-main);margin-bottom:.5rem;">{{ r.question }}</p>
+    <p style="font-size:.875rem;margin:0;">Your answer: <strong>{{ r.user_answer or 'Not answered' }}</strong></p>
+    {% if r.status == 'wrong' %}
+    <p style="font-size:.875rem;margin:.25rem 0 0;color:var(--success);">Correct answer: <strong>{{ r.correct_answer }}</strong></p>
+    {% endif %}
+</div>
+{% endfor %}
 {% endblock %}

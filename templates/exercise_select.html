@@ -1,24 +1,25 @@
-{% extends "base.html" %}
-{% block title %}{{ disaster }} Exercises - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}{{ disaster }} Exercises — DisasterGuard{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2>{{ disaster }} – Exercises</h2>
-    <a href="/simulation/{{ disaster }}" class="btn btn-outline btn-sm">⬅ Back to Scenario</a>
+<div class="flex items-center gap-2 mb-2">
+    <a href="/simulation/{{ disaster }}" class="btn btn-ghost btn-sm" id="exercise-back-btn">← Back to Details</a>
 </div>
-
-<div class="card mb-4">
-    <p class="text-muted mb-4">Select an exercise variant to test your knowledge on {{ disaster }} preparedness and response protocols.</p>
-    
-    <div class="discover-grid mt-0">
-    {% for i in range(1,11) %}
-        <a href="/simulation/{{ disaster }}/exercise/{{ i }}" class="discover-card p-3" style="text-align: left; background: var(--bg-page)">
-            <h3 class="mb-1">Variant {{ i }}</h3>
-            <div class="flex justify-between items-center mt-2">
-                <span class="badge badge-warning">20 Questions</span>
-                <span class="text-muted">Start →</span>
-            </div>
-        </a>
-    {% endfor %}
+<div class="mini-hero">
+    <h1>🎯 {{ disaster }} Exercises</h1>
+    <p style="color:rgba(255,255,255,.85);">Choose an exercise to test and improve your knowledge.</p>
+</div>
+<div class="auto-grid-sm mt-2">
+{% for num in [1,2,3] %}
+<div class="card text-center" style="border-top:3px solid var(--primary-light);">
+    <div style="font-size:2.5rem;margin-bottom:.75rem;">
+        {{ '🥇' if num==1 else '🥈' if num==2 else '🥉' }}
     </div>
+    <h3>Exercise {{ num }}</h3>
+    <p style="font-size:.875rem;">{{ '5 beginner questions' if num==1 else '5 intermediate questions' if num==2 else '5 advanced questions' }}</p>
+    <a href="/simulation/{{ disaster }}/exercise/{{ num }}" class="btn btn-primary mt-3 w-full" id="start-exercise-{{ num }}-btn">
+        Start Exercise {{ num }}
+    </a>
+</div>
+{% endfor %}
 </div>
 {% endblock %}

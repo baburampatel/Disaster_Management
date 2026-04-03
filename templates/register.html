@@ -1,27 +1,33 @@
-{% extends "base.html" %}
-{% block title %}Register - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}Create Account — DisasterGuard{% endblock %}
 {% block content %}
-<div class="auth-card" style="margin-top: 4rem;">
-    <div class="card">
-        <h2 class="text-center mb-3">Create Account</h2>
-        <form method="post">
-            <div class="form-group">
-                <label class="form-label">Full Name</label>
-                <input type="text" name="name" placeholder="John Doe" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" name="email" placeholder="agent@disaster.gov" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width:100%">Register securely</button>
-        </form>
-        <p class="text-center mt-3">
-            Already registered? <a href="/">Log in here</a>
-        </p>
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="text-center mb-3">
+            <div style="font-size:3rem;margin-bottom:.5rem;">🛡️</div>
+            <h1 style="font-size:1.75rem;">Join DisasterGuard</h1>
+            <p>Create your free preparedness account</p>
+        </div>
+        <div class="card">
+            <form action="/register" method="POST" id="register-form">
+                <div class="form-group">
+                    <label class="form-label" for="name">Full Name</label>
+                    <input type="text" name="name" id="name" class="form-control" placeholder="Your Name" required autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" name="email" id="email" class="form-control" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" name="password" id="password" class="form-control" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-primary w-full" id="register-submit-btn">Create Account →</button>
+            </form>
+            <p class="text-center mt-3" style="font-size:.875rem;">
+                Already have an account? <a href="/" id="register-login-link">Sign in</a>
+            </p>
+        </div>
     </div>
 </div>
 {% endblock %}

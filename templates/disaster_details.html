@@ -1,64 +1,103 @@
-{% extends "base.html" %}
-{% block title %}{{ disaster }} Details - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}{{ disaster }} — Simulation Details — DisasterGuard{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2>{{ disaster }} – Disaster Preparedness</h2>
-    <a href="/user" class="btn btn-outline btn-sm">⬅ Dashboard</a>
+<div class="flex items-center gap-2 mb-2">
+    <a href="/general" class="btn btn-ghost btn-sm" id="sim-back-btn">← All Disasters</a>
+    <span style="color:var(--text-muted);">/</span>
+    <span style="color:var(--text-muted);">{{ disaster }}</span>
 </div>
 
-<div class="content-panel">
-    <h3 class="section-title">📘 Overview</h3>
-    <p>{{ details[0] }}</p>
+<div class="mini-hero">
+    <h1>🔍 {{ disaster }} — Simulation Details</h1>
+    <p style="color:rgba(255,255,255,.85);">Study the facts, then test your knowledge with exercises.</p>
 </div>
 
-<div class="two-column mb-4">
-    <div class="content-panel mb-0" style="border-left: 4px solid var(--warning-color)">
-        <h3 class="section-title">⚠ Causes</h3>
-        <ul class="info-list">
-            {% for c in details[1].split(',') %}
-            <li>{{ c }}</li>
+<div class="flex gap-2 mb-4" style="flex-wrap:wrap;">
+    <a href="/simulation/{{ disaster }}/exercises" class="btn btn-primary" id="sim-exercises-btn">🎯 Take Exercises</a>
+    <a href="/disaster/{{ disaster }}/guide" class="btn btn-outline" id="sim-guide-btn">📖 Full Guide</a>
+</div>
+
+{% if details %}
+<div class="grid-2">
+    <div>
+        <div class="content-panel">
+            <h3 class="section-title">🔍 What is {{ disaster }}?</h3>
+            <p>{{ details[0] or 'No description available.' }}</p>
+        </div>
+        <div class="content-panel">
+            <h3 class="section-title">⚙️ Causes</h3>
+            <ul class="info-list">
+            {% for cause in (details[1] or 'Unknown').split(',') %}
+                <li>{{ cause.strip() }}</li>
             {% endfor %}
-        </ul>
-    </div>
-
-    <div class="content-panel mb-0" style="border-left: 4px solid var(--danger-color)">
-        <h3 class="section-title">💥 Impacts</h3>
-        <ul class="info-list">
-            {% for i in details[2].split(',') %}
-            <li>{{ i }}</li>
+            </ul>
+        </div>
+        <div class="content-panel">
+            <h3 class="section-title">💥 Impacts</h3>
+            <ul class="info-list">
+            {% for impact in (details[2] or 'Unknown').split(',') %}
+                <li>{{ impact.strip() }}</li>
             {% endfor %}
-        </ul>
+            </ul>
+        </div>
+        <div class="content-panel" style="border-left:4px solid var(--accent);">
+            <h3 class="section-title">📰 Case Study</h3>
+            <p>{{ details[3] or 'No case study available.' }}</p>
+        </div>
+        <div class="content-panel" style="border-left:4px solid var(--primary-light);">
+            <h3 class="section-title">💡 Lessons Learned</h3>
+            <p>{{ details[4] or 'No lessons available.' }}</p>
+        </div>
     </div>
-</div>
-
-<div class="content-panel" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9)">
-    <h3 class="section-title">📖 Case Study</h3>
-    <p>{{ details[3] }}</p>
-</div>
-
-<div class="two-column mb-4">
-    <div class="content-panel mb-0" style="border-left: 4px solid var(--success-color); background: #f0fdf4;">
-        <h3 class="section-title" style="color: var(--success-color)">✅ Do’s</h3>
-        <ul class="info-list dos-list">
-            {% for d in details[5].split(';') %}
-            {% if d.strip() %}<li>{{ d }}</li>{% endif %}
+    <div>
+        {% if details[5] %}
+        <div class="content-panel" style="border-left:4px solid var(--success);">
+            <h3 class="section-title" style="color:var(--success);">✅ Do's</h3>
+            <ul class="info-list dos-list">
+            {% for item in details[5].split('.') %}
+                {% if item.strip() %}<li>{{ item.strip() }}</li>{% endif %}
             {% endfor %}
-        </ul>
-    </div>
-
-    <div class="content-panel mb-0" style="border-left: 4px solid var(--danger-color); background: #fef2f2;">
-        <h3 class="section-title" style="color: var(--danger-color)">❌ Don’ts</h3>
-        <ul class="info-list donts-list">
-            {% for d in details[6].split(';') %}
-            {% if d.strip() %}<li>{{ d }}</li>{% endif %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if details[6] %}
+        <div class="content-panel" style="border-left:4px solid var(--danger);">
+            <h3 class="section-title" style="color:var(--danger);">❌ Don'ts</h3>
+            <ul class="info-list donts-list">
+            {% for item in details[6].split('.') %}
+                {% if item.strip() %}<li>{{ item.strip() }}</li>{% endif %}
             {% endfor %}
-        </ul>
+            </ul>
+        </div>
+        {% endif %}
+        {% if article %}
+        {% if article[0] %}
+        <div class="content-panel" style="border-left:4px solid var(--accent);">
+            <h3 class="section-title">⚠️ Warning Signs</h3>
+            <ul class="info-list">
+            {% for sign in article[0].split('|') %}
+                {% if sign.strip() %}<li>{{ sign.strip() }}</li>{% endif %}
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if article[1] %}
+        <div class="content-panel">
+            <h3 class="section-title">🎒 Safety Kit</h3>
+            <ul class="info-list">
+            {% for item in article[1].split('|') %}
+                {% if item.strip() %}<li>{{ item.strip() }}</li>{% endif %}
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endif %}
     </div>
 </div>
-
-<div class="text-center mt-4 mb-4">
-    <a href="/simulation/{{ disaster }}/exercises" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 3rem;">
-        Start Tactical Exercises →
-    </a>
+{% else %}
+<div class="card text-center" style="padding:3rem;">
+    <p>Simulation details for <strong>{{ disaster }}</strong> are not yet available.</p>
+    <a href="/general" class="btn btn-outline mt-2" id="sim-back2-btn">← Browse All Disasters</a>
 </div>
+{% endif %}
 {% endblock %}

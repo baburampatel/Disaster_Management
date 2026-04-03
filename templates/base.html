@@ -1,61 +1,150 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}DisasterGuard - Emergency Management{% endblock %}</title>
-    <!-- Google Fonts -->
+    <meta name="description" content="DisasterGuard - Comprehensive disaster management and preparedness platform for India">
+    <title>{% block title %}DisasterGuard — Preparedness Saves Lives{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     {% block head %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="{% if session.get('role') == 'admin' %}/admin{% elif session.get('user_id') %}/user{% else %}/{% endif %}" class="nav-brand">
-                <span class="brand-icon">🛡️</span> Disaster<span class="brand-hl">Guard</span>
-            </a>
-            
-            <div class="nav-links">
-                {% if session.get('user_id') %}
-                    {% if session.get('role') != 'admin' %}
-                        <a href="/user" class="nav-link">Dashboard</a>
-                        <a href="/general" class="nav-link">Explore</a>
-                        <a href="/feedback-page" class="nav-link">Feedback</a>
-                    {% endif %}
-                    <a href="/logout" class="btn btn-outline btn-sm">Logout</a>
-                {% else %}
-                    <a href="/" class="nav-link">Login</a>
-                    <a href="/register" class="btn btn-primary btn-sm">Register</a>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
 
-    <div class="flash-container">
-        {% with messages = get_flashed_messages(category_filter=["error", "message"]) %}
-            {% if messages %}
-                {% for msg in messages %}
-                <div class="toast toast-error">{{ msg }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        {% with messages = get_flashed_messages(category_filter=["success"]) %}
-            {% if messages %}
-                {% for msg in messages %}
-                <div class="toast toast-success">{{ msg }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-container">
+        <a href="{% if session.get('role')=='admin' %}/admin{% elif session.get('user_id') %}/user{% else %}/home{% endif %}" class="nav-brand" aria-label="DisasterGuard Home">
+            🛡️ Disaster<span class="hl">Guard</span>
+        </a>
+
+        {% if session.get('user_id') %}
+            <div class="nav-links">
+                {% if session.get('role') == 'admin' %}
+                    <a href="/admin" class="nav-link">📊 Dashboard</a>
+                    <div class="nav-dropdown">
+                        <span class="nav-dropdown-toggle">⚙️ Manage ▾</span>
+                        <div class="nav-dropdown-menu">
+                            <a href="/admin/content-manager" class="nav-dropdown-item">📝 Content Manager</a>
+                            <a href="/admin/analytics-expanded" class="nav-dropdown-item">📈 Analytics</a>
+                        </div>
+                    </div>
+                    <a href="/alerts" class="nav-link">🚨 Alerts</a>
+                {% else %}
+                    <a href="/user" class="nav-link">🏠 Dashboard</a>
+                    <div class="nav-dropdown">
+                        <span class="nav-dropdown-toggle">🌍 Explore ▾</span>
+                        <div class="nav-dropdown-menu">
+                            <a href="/disaster-library" class="nav-dropdown-item">📚 Disaster Library</a>
+                            <a href="/general" class="nav-dropdown-item">🌐 All Disasters</a>
+                            <a href="/continents" class="nav-dropdown-item">🗺️ By Continent</a>
+                            <a href="/india" class="nav-dropdown-item">🇮🇳 India States</a>
+                        </div>
+                    </div>
+                    <div class="nav-dropdown">
+                        <span class="nav-dropdown-toggle">🆘 Safety ▾</span>
+                        <div class="nav-dropdown-menu">
+                            <a href="/alerts" class="nav-dropdown-item">🚨 Active Alerts</a>
+                            <a href="/emergency-contacts" class="nav-dropdown-item">📞 Emergency Contacts</a>
+                            <a href="/shelters" class="nav-dropdown-item">🏠 Shelters</a>
+                            <a href="/preparedness-checklist" class="nav-dropdown-item">✅ Preparedness Checklist</a>
+                        </div>
+                    </div>
+                    <a href="/training" class="nav-link">🎯 Training</a>
+                    <a href="/report-incident" class="nav-link">⚠️ Report</a>
+                    <a href="/feedback-page" class="nav-link">💬 Feedback</a>
+                {% endif %}
+                <a href="/logout" class="btn btn-outline btn-sm" id="logout-btn">Logout</a>
+            </div>
+        {% else %}
+            <div class="nav-links">
+                <a href="/home" class="nav-link">Home</a>
+                <a href="/emergency-contacts" class="nav-link">Emergency Contacts</a>
+                <a href="/" class="nav-link">Login</a>
+                <a href="/register" class="btn btn-primary btn-sm" id="register-cta-btn">Get Started</a>
+            </div>
+        {% endif %}
+
+        <button class="nav-hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
     </div>
 
-    <main class="main-content">
-        {% block content %}{% endblock %}
-    </main>
-    
-    <footer class="footer">
-        <p>&copy; 2026 DisasterGuard. Preparedness saves lives.</p>
-    </footer>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu" role="menu">
+        {% if session.get('user_id') %}
+            {% if session.get('role') == 'admin' %}
+                <a href="/admin">📊 Dashboard</a>
+                <a href="/admin/content-manager">📝 Content Manager</a>
+                <a href="/admin/analytics-expanded">📈 Analytics</a>
+                <a href="/alerts">🚨 Alerts</a>
+            {% else %}
+                <a href="/user">🏠 Dashboard</a>
+                <a href="/disaster-library">📚 Disaster Library</a>
+                <a href="/alerts">🚨 Active Alerts</a>
+                <a href="/emergency-contacts">📞 Emergency Contacts</a>
+                <a href="/shelters">🏠 Shelters</a>
+                <a href="/training">🎯 Training</a>
+                <a href="/preparedness-checklist">✅ Checklist</a>
+                <a href="/report-incident">⚠️ Report Incident</a>
+                <a href="/feedback-page">💬 Feedback</a>
+            {% endif %}
+            <a href="/logout" style="color: var(--danger);">🚪 Logout</a>
+        {% else %}
+            <a href="/home">Home</a>
+            <a href="/">Login</a>
+            <a href="/register">Register</a>
+        {% endif %}
+    </div>
+</nav>
 
+<!-- Flash Messages -->
+<div class="flash-container" aria-live="polite">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, msg in messages %}
+                <div class="toast toast-{{ category if category in ['success','error','info'] else 'info' }}" role="alert">
+                    {{ msg }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>🛡️ &copy; 2026 <strong>DisasterGuard</strong> — Built for Preparedness, Designed for Resilience.</p>
+        <p class="mt-1" style="font-size:.8rem;">Demo Login: admin@gmail.com / admin123 &nbsp;|&nbsp; user@disaster.edu / user123</p>
+    </div>
+</footer>
+
+<script>
+// Hamburger menu toggle
+const btn   = document.getElementById('hamburger-btn');
+const menu  = document.getElementById('mobile-menu');
+if (btn && menu) {
+    btn.addEventListener('click', () => {
+        const isOpen = menu.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen);
+    });
+}
+// Auto-dismiss toasts
+document.querySelectorAll('.toast').forEach(t => {
+    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .5s'; setTimeout(()=>t.remove(),500); }, 4500);
+});
+// Checklist persistence
+document.querySelectorAll('.checklist-item input[type=checkbox]').forEach(cb => {
+    const key = 'chk_' + cb.id;
+    if (localStorage.getItem(key) === '1') { cb.checked = true; cb.closest('.checklist-item').classList.add('done'); }
+    cb.addEventListener('change', function() {
+        localStorage.setItem(key, this.checked ? '1' : '0');
+        this.closest('.checklist-item').classList.toggle('done', this.checked);
+    });
+});
+</script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

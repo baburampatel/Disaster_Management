@@ -1,47 +1,31 @@
-{% extends "base.html" %}
-{% block title %}{{ disaster }} Ex{{ exercise }} - DisasterGuard{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}Exercise {{ exercise }} — {{ disaster }} — DisasterGuard{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2>{{ disaster }} – Exercise {{ exercise }}</h2>
-    <a href="/simulation/{{ disaster }}/exercises" class="btn btn-danger btn-sm" onclick="return confirm('Abort exercise? Progress will be lost.')">
-        ❌ Abort Exercise
-    </a>
+<div class="flex items-center justify-between mb-3" style="flex-wrap:wrap;gap:1rem;">
+    <div>
+        <h1 style="margin-bottom:.25rem;">🎯 {{ disaster }} — Exercise {{ exercise }}</h1>
+        <p style="margin:0;">Answer all {{ questions|length }} questions and submit to see your score.</p>
+    </div>
+    <span class="badge badge-primary">{{ questions|length }} Questions</span>
 </div>
-
-<form method="post" class="card" style="padding: 2rem; background: transparent; border: none; box-shadow: none">
-    {% if questions|length == 0 %}
-        <div class="card text-center py-4">
-            <p class="text-danger mb-0">No tactical questions available for this variant.</p>
-        </div>
-    {% else %}
-        
-        {% for q in questions %}
-        <div class="question-block">
-            <div class="q-num">Question {{ loop.index }} of {{ questions|length }}</div>
-            <div class="q-text">{{ q[2] }}</div>
-
-            <label class="option-label">
-                <input type="radio" name="{{ q[0] }}" value="A" required>
-                <span>A) {{ q[3] }}</span>
-            </label>
-            <label class="option-label">
-                <input type="radio" name="{{ q[0] }}" value="B">
-                <span>B) {{ q[4] }}</span>
-            </label>
-            <label class="option-label">
-                <input type="radio" name="{{ q[0] }}" value="C">
-                <span>C) {{ q[5] }}</span>
-            </label>
-            <label class="option-label">
-                <input type="radio" name="{{ q[0] }}" value="D">
-                <span>D) {{ q[6] }}</span>
-            </label>
-        </div>
+<form action="/simulation/{{ disaster }}/exercise/{{ exercise }}" method="POST" id="quiz-form">
+    {% for q in questions %}
+    <div class="question-block">
+        <span class="q-num">Question {{ loop.index }}/{{ questions|length }}</span>
+        <p class="q-text">{{ q['question'] }}</p>
+        {% for opt_key, opt_val in [('A', q['option_a']), ('B', q['option_b']), ('C', q['option_c']), ('D', q['option_d'])] %}
+        {% if opt_val %}
+        <label class="option-label" for="opt-{{ q['id'] }}-{{ opt_key }}">
+            <input type="radio" name="{{ q['id'] }}" id="opt-{{ q['id'] }}-{{ opt_key }}" value="{{ opt_key }}" required>
+            <span class="badge badge-muted" style="flex-shrink:0;">{{ opt_key }}</span>
+            {{ opt_val }}
+        </label>
+        {% endif %}
         {% endfor %}
-
-        <div class="text-center mt-4">
-            <button type="submit" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 3rem;">Submit Report</button>
-        </div>
-    {% endif %}
+    </div>
+    {% endfor %}
+    <div class="text-center mt-3">
+        <button type="submit" class="btn btn-primary btn-lg" id="submit-quiz-btn">📊 Submit Answers</button>
+    </div>
 </form>
 {% endblock %}
